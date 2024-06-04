@@ -22,11 +22,13 @@ namespace Markuse_mälupulk_2_0
         bool initialized = false;
         bool testing = true;
 
+        ObservableCollection<string[]> dataSource;
+
         public SelectDrive()
         {
             InitializeComponent();
 
-            var dataSource = new ObservableCollection<string[]>();
+            dataSource = new ObservableCollection<string[]>();
             foreach(Process p in Process.GetProcesses())
             {
                 if (p.ProcessName.Contains("Markuse mälupulk"))
@@ -130,8 +132,20 @@ namespace Markuse_mälupulk_2_0
 
         private void Window_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            if (dataSource.Count == 1)
+            {
+                DriveList.SelectedIndex = 0;
+                exit = false;
+                this.Close();
+            } else
+            {
+                this.IsVisible = true;
+                this.Width = 480;
+                this.Height = 280;
+            }
             this.Position = new PixelPoint(parent.Position.X + ((int)parent.Width / 2) - ((int)this.Width / 2), parent.Position.Y + ((int)parent.Height / 2) - ((int)this.Height / 2));
             initialized = true;
+
         }
 
         private void Window_PositionChanged(object? sender, Avalonia.Controls.PixelPointEventArgs e)

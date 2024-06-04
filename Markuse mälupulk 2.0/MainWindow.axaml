@@ -40,32 +40,32 @@
       </Panel.Background>
     </Panel>
     <Panel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,-2">
-      <TabControl FontSize="12">
+      <TabControl FontSize="12" SelectionChanged="TabControl_SelectionChanged">
         <!--Avaleht-->
         <TabItem Header="Avaleht">
-          <Grid ColumnDefinitions="*, 2, *">
+          <Grid ColumnDefinitions="*, 2, *" Name="NewsGrid">
             <Panel Grid.Column="0" Background="Black">
-              <cc:RichTextBox Name="NewsBox" Background="Transparent"></cc:RichTextBox>
+              <cc:RichTextBox Name="NewsBox" Background="White" Padding="0" Foreground="Black" DoubleTapped="RichTextBox_DoubleTapped"></cc:RichTextBox>
             </Panel>
-            <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns" Cursor="TopSide"></GridSplitter>
-            <Panel Grid.Column="2">
+            <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns" Cursor="TopSide" Name="NewsSplit"></GridSplitter>
+            <Panel Grid.Column="2" Name="NewsSidePanel">
               <StackPanel Margin="10">
                 <TextBlock Classes="BigText">Navigatsioon</TextBlock>
-                <Label>Artikkel 1/5</Label>
+                <Label Name="DocNav">Artikkel 1/5</Label>
                 <WrapPanel HorizontalAlignment="Left" Margin="0,10">
-                  <Button Margin="0,0,10,0">&lt;&lt; Eelmine</Button>
-                  <Button Margin="0,0,10,0">Järgmine &gt;&gt;</Button>
+                  <Button Click="PreDoc_Click" Margin="0,0,10,0">&lt;&lt; Eelmine</Button>
+                  <Button Click="NextDoc_Click" Margin="0,0,10,0">Järgmine &gt;&gt;</Button>
                   <Button Click="Reload_Click">Laadi uuesti</Button>
                 </WrapPanel>
                 <TextBlock Classes="BigText" Margin="0,10">Esiletõstetud videod</TextBlock>
-                <ListBox Name="VideoBox">
+                <ListBox Name="VideoBox" SelectionChanged="VideoBox_Select">
                   <ListBoxItem>Video A</ListBoxItem>
                   <ListBoxItem>Video B</ListBoxItem>
                   <ListBoxItem>Video C</ListBoxItem>
                 </ListBox>
                 <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10">
-                  <Button Margin="0,0,10,0">Esita</Button>
-                  <Button>Kõik videod</Button>
+                  <Button Margin="0,0,10,0" Name="VideoPlayButton" Click="PlayVideo" IsEnabled="False">Esita</Button>
+                  <Button Click="AllVidsClick">Kõik videod</Button>
                 </WrapPanel>
               </StackPanel>
               <Label HorizontalAlignment="Right" VerticalAlignment="Bottom">Topeltklõpsake vasakut paneeli, et see peita</Label>
@@ -226,10 +226,10 @@
               </WrapPanel.Styles>
               <Button>Muuda mälupulga nime</Button>
               <Button>Teisenda väljaandeks Ultimate</Button>
-              <Button>Värskenda andmeid</Button>
+              <Button Click="ReloadData">Värskenda andmeid</Button>
               <Button>Ebaturvaline PIN kood</Button>
               <Button>Varundushaldur</Button>
-              <Button>Lukusta haldusfunktsioonid</Button>
+              <Button Name="LockManagement" Click="LockFeatsClick" IsVisible="False">Lukusta haldusfunktsioonid</Button>
               <Button>Muuda PIN koodi</Button>
               <Button>Lisafunktsioonid</Button>
             </WrapPanel>
@@ -245,15 +245,12 @@
           </Grid>
         </TabItem>
         <!-- Arendamine -->
-        <TabItem Header="Arendamine">
-          <Panel>
+        <TabItem Header="Arendamine" IsVisible="False">
+          <Panel Name="DevPanel">
             <StackPanel>
               <TextBlock Classes="BigText">Arendamine</TextBlock>
               <Label Classes="SemiBigText" Margin="0,10,0,0">Esiletõstetud videote haldamine</Label>
-              <ListBox>
-                <ListBoxItem>Video A</ListBoxItem>
-                <ListBoxItem>Video B</ListBoxItem>
-                <ListBoxItem>Video C</ListBoxItem>
+              <ListBox Name="VideoBoxDev">
               </ListBox>
               <WrapPanel HorizontalAlignment="Left">
                 <WrapPanel.Styles>
@@ -298,8 +295,8 @@
       </TabControl>
     </Panel>
     <Panel Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0">
-      <StackPanel Orientation="Horizontal">
-        <ProgressBar Name="CollectProgress" IsIndeterminate="True" />
+      <StackPanel Orientation="Horizontal" Margin="15,4">
+        <ProgressBar Name="CollectProgress" IsIndeterminate="True" Foreground="#8fff" />
         <Label Name="ConnectionStateLabel" Margin="10,0">seadmete tuvastmine...</Label>
       </StackPanel>
     </Panel>

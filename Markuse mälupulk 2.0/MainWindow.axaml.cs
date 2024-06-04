@@ -17,6 +17,9 @@ using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using MsBox.Avalonia;
 using System.Threading.Tasks;
+using System.Buffers.Text;
+using RtfDomParser;
+using System.Security.Cryptography;
 
 namespace Markuse_mälupulk_2._0
 {
@@ -26,6 +29,7 @@ namespace Markuse_mälupulk_2._0
         Color[] scheme = [Color.FromRgb(255, 255, 255), Color.FromRgb(0,0,0)];                          // default color scheme
         string flash_root = "";                                                                         // flash drive root directory
         bool testing = true;                                                                            // avoid loading content when we're in axaml view
+        string current_pin = "";
         List<double> sts = new List<double>();
         List<string> list = new List<string>();
         bool canContinue = true;
@@ -63,8 +67,12 @@ namespace Markuse_mälupulk_2._0
             });
             if (!testing)
             {
-                SelectDrive sd = new();
-                sd.parent = this;
+                SelectDrive sd = new()
+                {
+                    parent = this,
+                    Background = this.Background,
+                    Foreground = this.Foreground
+                };
                 await sd.ShowDialog(this).WaitAsync(cancellationToken: CancellationToken.None);
                 if (sd.exit)
                 {
@@ -191,16 +199,19 @@ namespace Markuse_mälupulk_2._0
                     {
                         case 1:
                             VideoBox.Items.Clear();
+                            VideoBoxDev.Items.Clear();
                             foreach (FileInfo fi in new DirectoryInfo(flash_root + "/Markuse_videod").GetFiles())
                             {
                                 if (fi.Name.Substring(1, 1) == ".")
                                 {
-                                    VideoBox.Items.Add(string.Join('.', fi.Name.Split('.').Skip(1))[1..]);
+                                    string videoName = string.Join('.', fi.Name.Split('.').Skip(1))[1..];
+                                    VideoBox.Items.Add(videoName);
+                                    VideoBoxDev.Items.Add(videoName);
                                 }
                             }
                             break;
                         case 5:
-                            //NewsBox.LoadRtfDoc(flash_root + "/E_INFO/uudis1.rtf");
+                            LoadDoc("/E_INFO/uudis1.rtf");
                             break;
                         case 20:
                             UsersBox.Items.Clear();
@@ -293,6 +304,16 @@ namespace Markuse_mälupulk_2._0
                 HelpLink.Content = mwm.infotopic + "?";
             }
             this.DataContext = mwm;
+        }
+
+        public void LoadDoc(string filename)
+        {
+            if (File.Exists(flash_root + filename.Replace(".rtf", ".docx")))
+            {
+                NewsBox.CloseDocument();
+                NewsBox.LoadWordDoc(flash_root + filename.Replace(".rtf", ".docx"));
+                NewsBox.FlowDoc.PagePadding = new Thickness(0);
+            }
         }
 
         public void GetGameSize()
@@ -403,7 +424,14 @@ namespace Markuse_mälupulk_2._0
 
         private void Reload_Click(object? sender, RoutedEventArgs e)
         {
-            TestRtb();
+            string? docStr = DocNav.Content?.ToString()?.Split("/")[0].Split(" ")[1];
+            if (docStr == null)
+            {
+                return;
+            }
+            int docId = int.Parse(docStr);
+
+            LoadDoc($"/E_INFO/uudis{docId}.rtf");
         }
 
         private void Fullscreen_Toggle(object? sender, RoutedEventArgs e)
@@ -494,7 +522,7 @@ namespace Markuse_mälupulk_2._0
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message, "Tundub, et rakenduse käivitumine ebaõnnestus. Põhjus on järgmine:", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _= MessageBoxShow(ex.Message, "Tundub, et rakenduse käivitumine ebaõnnestus. Põhjus on järgmine:", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
             }
         }
 
@@ -515,7 +543,7 @@ namespace Markuse_mälupulk_2._0
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message, "Tundub, et rakenduse kustutamine ebaõnnestus. Põhjus on järgmine:", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBoxShow(ex.Message, "Tundub, et rakenduse kustutamine ebaõnnestus. Põhjus on järgmine:", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
             }
         }
 
@@ -536,8 +564,7 @@ namespace Markuse_mälupulk_2._0
 
         private void NavigateDirectory(object? sender, RoutedEventArgs e)
         {
-            Button? me = sender as Button;
-            if (me != null)
+            if (sender is Button me)
             {
                 switch (me.Content)
                 {
@@ -607,6 +634,156 @@ namespace Markuse_mälupulk_2._0
             {
                 _ = MessageBoxShow(mwm.info, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Question);
             }
+        }
+
+        private void NextDoc_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            string? docStr = DocNav.Content?.ToString()?.Split("/")[0].Split(" ")[1];
+            if (docStr == null)
+            {
+                return;
+            }
+            int docId = int.Parse(docStr);
+            if (docId == 5)
+            {
+                docId = 0;
+            }
+            LoadDoc($"/E_INFO/uudis{++docId}.rtf");
+            DocNav.Content = string.Format("Artikkel {0}/5", docId);
+        }
+
+        private void PreDoc_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            string? docStr = DocNav.Content?.ToString()?.Split("/")[0].Split(" ")[1];
+            if (docStr == null)
+            {
+                return;
+            }
+            int docId = int.Parse(docStr);
+            if (docId == 1)
+            {
+                docId = 6;
+            }
+            LoadDoc($"/E_INFO/uudis{--docId}.rtf");
+            DocNav.Content = string.Format("Artikkel {0}/5", docId);
+        }
+
+        private void RichTextBox_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            NewsSidePanel.IsVisible = !NewsSidePanel.IsVisible;
+            if (!NewsSidePanel.IsVisible)
+            {
+                NewsGrid.ColumnDefinitions[2].MaxWidth = 0;
+            } else
+            {
+                NewsGrid.ColumnDefinitions[2].MaxWidth = 9999;
+            }
+        }
+
+        private void PlayVideo(object? sender, RoutedEventArgs e)
+        {
+            if (VideoBox.SelectedItems?.Count > 0)
+            {
+                Process p = new();
+                p.StartInfo.FileName = $"{flash_root}/Markuse_videod/{VideoBox.SelectedIndex+1}. {VideoBox.SelectedItems[0]}";
+                p.StartInfo.UseShellExecute = true;
+                p.Start();
+            }
+        }
+
+        private void AllVidsClick(object? sender, RoutedEventArgs e)
+        {
+            Process p = new();
+            p.StartInfo.FileName = $"{flash_root}/Markuse_videod";
+            p.StartInfo.UseShellExecute = true;
+            p.Start();
+        }
+
+        private void VideoBox_Select(object? sender, SelectionChangedEventArgs e)
+        {
+            VideoPlayButton.IsEnabled = VideoBox.SelectedItems?.Count > 0;
+        }
+
+        private async void TabControl_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            TabControl? me = sender as TabControl;
+            if (me != null)
+            {
+                if (me.SelectedIndex == 5)
+                {
+                    DevPanel.IsVisible = false;
+                    Parool p = new();
+                    if (File.Exists(flash_root + "/NTFS/spin.sys"))
+                    {
+                        if (current_pin != File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString())
+                        {
+                            string ostr = File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString();
+                            p.Title = "Arendamise valikud nõuavad autentimist";
+                            p.currentpin = "";
+                            await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+                            byte[] correct = MD5.HashData(Encoding.ASCII.GetBytes(p.currentpin));
+                            string cstr = "";
+                            foreach (byte b in correct)
+                            {
+                                cstr += b.ToString("X2");
+                            }
+                            string s = File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString();
+                            current_pin = cstr;
+                            if (cstr != ostr)
+                            {
+                                me.SelectedIndex = 0;
+                                await MessageBoxShow("Vale PIN kood", "Arendamise valikud nõuavad autentimist", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).WaitAsync(CancellationToken.None);
+                                return;
+                            }
+                            else
+                            {
+                                DevPanel.IsVisible = true;
+                                LockManagement.IsVisible = true;
+                            }
+                        } else
+                        {
+                            DevPanel.IsVisible = true;
+                        }
+                    }
+                    else if (File.Exists(flash_root + "/NTFS/config.sys"))
+                    {
+                        if (current_pin != File.ReadAllLines(flash_root + "/NTFS/config.sys", Encoding.ASCII)[0].ToString())
+                        {
+                            string ostr = File.ReadAllLines(flash_root + "/NTFS/config.sys", Encoding.ASCII)[0].ToString();
+                            p.Title = "Arendamise valikud nõuavad autentimist";
+                            p.currentpin = "";
+                            await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+                            current_pin = p.currentpin;
+                            if (p.currentpin != ostr)
+                            {
+                                me.SelectedIndex = 0;
+                                await MessageBoxShow("Vale PIN kood", "Arendamise valikud nõuavad autentimist", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).WaitAsync(CancellationToken.None);
+                                return;
+                            } else
+                            {
+                                DevPanel.IsVisible = true;
+                                LockManagement.IsVisible = true;
+                            }
+                        }
+                        else
+                        {
+                            DevPanel.IsVisible = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void LockFeatsClick(object? sender, RoutedEventArgs e)
+        {
+            current_pin = "";
+            LockManagement.IsVisible = false;
+        }
+
+        private void ReloadData(object? sender, RoutedEventArgs e) {
+            MainWindow mw = new();
+            mw.Show();
+            this.Close();
         }
     }
 }

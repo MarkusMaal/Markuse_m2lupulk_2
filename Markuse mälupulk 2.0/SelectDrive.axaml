@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterOwner" ExtendClientAreaChromeHints="NoChrome" ExtendClientAreaToDecorationsHint="True"
         CanResize="False"
         Title="Valige markuse mälupulk süsteemid seade" ShowInTaskbar="False" Icon="/Resources/folder.png" Loaded="Window_Loaded"
-        PositionChanged="Window_PositionChanged" SizeChanged="Window_SizeChanged"
+        PositionChanged="Window_PositionChanged" SizeChanged="Window_SizeChanged" IsVisible="False"
         >
   <Grid>
     <Grid.RowDefinitions>

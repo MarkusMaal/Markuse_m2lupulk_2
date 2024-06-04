@@ -2,12 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="360"
-        x:Class="Markuse_mälupulk_2_0.Parool"
+        mc:Ignorable="d" Width="360" Height="360"
+        x:Class="Markuse_mälupulk_2_0.Parool" WindowStartupLocation="CenterOwner"
         Title="Parool">
   <StackPanel>
     <Label FontSize="20" HorizontalAlignment="Center" Margin="0,15">Palun sisestage PIN kood</Label>
-    <TextBox Margin="15,0"></TextBox>
+    <TextBox Margin="15,0" Name="TopBox" IsReadOnly="True"></TextBox>
     <Grid HorizontalAlignment="Center" Margin="20">
       <Grid.RowDefinitions>
         <RowDefinition/>
@@ -20,18 +20,18 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <Button Grid.Row="0" Grid.Column="0">7</Button>
-      <Button Grid.Row="0" Grid.Column="1">8</Button>
-      <Button Grid.Row="0" Grid.Column="2">9</Button>
-      <Button Grid.Row="1" Grid.Column="0">4</Button>
-      <Button Grid.Row="1" Grid.Column="1">5</Button>
-      <Button Grid.Row="1" Grid.Column="2">6</Button>
-      <Button Grid.Row="2" Grid.Column="0">1</Button>
-      <Button Grid.Row="2" Grid.Column="1">2</Button>
-      <Button Grid.Row="2" Grid.Column="2">3</Button>
-      <Button Grid.Row="3" Grid.Column="0">&lt;--</Button>
-      <Button Grid.Row="3" Grid.Column="1">0</Button>
-      <Button Grid.Row="3" Grid.Column="2" FontSize="12">Lõpp</Button>
+      <Button Grid.Row="0" Grid.Column="0" Click="Number_Click">7</Button>
+      <Button Grid.Row="0" Grid.Column="1" Click="Number_Click">8</Button>
+      <Button Grid.Row="0" Grid.Column="2" Click="Number_Click">9</Button>
+      <Button Grid.Row="1" Grid.Column="0" Click="Number_Click">4</Button>
+      <Button Grid.Row="1" Grid.Column="1" Click="Number_Click">5</Button>
+      <Button Grid.Row="1" Grid.Column="2" Click="Number_Click">6</Button>
+      <Button Grid.Row="2" Grid.Column="0" Click="Number_Click">1</Button>
+      <Button Grid.Row="2" Grid.Column="1" Click="Number_Click">2</Button>
+      <Button Grid.Row="2" Grid.Column="2" Click="Number_Click">3</Button>
+      <Button Grid.Row="3" Grid.Column="0" Click="Backspace_Click">&lt;--</Button>
+      <Button Grid.Row="3" Grid.Column="1" Click="Number_Click">0</Button>
+      <Button Grid.Row="3" Grid.Column="2" FontSize="12" Click="OK_Click">Lõpp</Button>
     </Grid>
   </StackPanel>
   <Window.Styles>

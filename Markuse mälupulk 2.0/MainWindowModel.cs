@@ -19,11 +19,7 @@ namespace Markuse_mälupulk_2_0
 
         public MainWindowModel()
         {
-            Folders =
-            [
-                new() {Name = ".", Type = "Kataloog*", Image = GetResource("Kaust")},
-                new() {Name = "..", Type = "Kataloog*", Image = GetResource("Kaust")}
-            ];
+            Folders = [];
             this.url = "";
             this.toptext = "";
             this.info = "";
