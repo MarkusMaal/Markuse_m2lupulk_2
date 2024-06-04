@@ -1,0 +1,37 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Markuse_mälupulk_2._0.App"
+             RequestedThemeVariant="Dark">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+        <FluentTheme />
+      <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+    </Application.Styles>
+  <Application.Resources>
+    <ResourceDictionary>
+      <Image x:Key="Info" Source="/Resources/f22170384.png" />
+      <Image x:Key="Mälupulk" Source="/Resources/mas_flash_wide.png" />
+      <Image x:Key="MälupulkVana" Source="/Resources/mas_flash.png" />
+      <Image x:Key="Pakkfail" Source="/Resources/batchpanel.png" />
+      <Image x:Key="Nooled" Source="/Resources/br.png" />
+      <Image x:Key="Muster" Source="/Resources/cool_pattern.png" />
+      <Image x:Key="RohelineNool" Source="/Resources/current.gif" />
+      <Image x:Key="Plaat" Source="/Resources/disc.png" />
+      <Image x:Key="Diskett" Source="/Resources/disk.png" />
+      <Image x:Key="Kaust" Source="/Resources/folder.png" />
+      <Image x:Key="Kõvaketas" Source="/Resources/hdd.png" />
+      <Image x:Key="Spikker" Source="/Resources/help.png" />
+      <Image x:Key="Rakendused" Source="/Resources/apps.png" />
+      <Image x:Key="Maja" Source="/Resources/mas_its_symmetric.png" />
+      <Image x:Key="Märkmik" Source="/Resources/noteicon.png" />
+      <Image x:Key="Kujundid" Source="/Resources/ots_thumbnail.png" />
+      <Image x:Key="Esitusnupp" Source="/Resources/play.png" />
+      <Image x:Key="Turvarežiim" Source="/Resources/safemode.png" />
+      <Image x:Key="Mutrid" Source="/Resources/setting.png" />
+      <Image x:Key="Universaalprogramm" Source="/Resources/uniprog.png" />
+      <Image x:Key="Tundmatu" Source="/Resources/Unknown.bmp" />
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

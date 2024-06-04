@@ -1,0 +1,86 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resources\abstract.png" />
+    <None Remove="Resources\apps.png" />
+    <None Remove="Resources\batchpanel.png" />
+    <None Remove="Resources\br.png" />
+    <None Remove="Resources\cool_pattern.png" />
+    <None Remove="Resources\current.gif" />
+    <None Remove="Resources\disc.png" />
+    <None Remove="Resources\disk.png" />
+    <None Remove="Resources\f22170384.png" />
+    <None Remove="Resources\folder.png" />
+    <None Remove="Resources\hdd.png" />
+    <None Remove="Resources\help.png" />
+    <None Remove="Resources\mas_flash.png" />
+    <None Remove="Resources\mas_flash_wide.png" />
+    <None Remove="Resources\mas_its_symmetric.png" />
+    <None Remove="Resources\Mälupulk.exe" />
+    <None Remove="Resources\noteicon.png" />
+    <None Remove="Resources\ots_thumbnail.png" />
+    <None Remove="Resources\play.png" />
+    <None Remove="Resources\safemode.png" />
+    <None Remove="Resources\setting.png" />
+    <None Remove="Resources\uniprog.png" />
+    <None Remove="Resources\Unknown.bmp" />
+    <None Remove="Resources\Unknown1.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\abstract.png" />
+    <AvaloniaResource Include="Resources\apps.png" />
+    <AvaloniaResource Include="Resources\batchpanel.png" />
+    <AvaloniaResource Include="Resources\br.png" />
+    <AvaloniaResource Include="Resources\cool_pattern.png" />
+    <AvaloniaResource Include="Resources\current.gif" />
+    <AvaloniaResource Include="Resources\disc.png" />
+    <AvaloniaResource Include="Resources\disk.png" />
+    <AvaloniaResource Include="Resources\f22170384.png" />
+    <AvaloniaResource Include="Resources\folder.png" />
+    <AvaloniaResource Include="Resources\hdd.png" />
+    <AvaloniaResource Include="Resources\help.png" />
+    <AvaloniaResource Include="Resources\mas_flash.png" />
+    <AvaloniaResource Include="Resources\mas_flash_wide.png" />
+    <AvaloniaResource Include="Resources\mas_its_symmetric.png" />
+    <AvaloniaResource Include="Resources\Mälupulk.exe" />
+    <AvaloniaResource Include="Resources\noteicon.png" />
+    <AvaloniaResource Include="Resources\ots_thumbnail.png" />
+    <AvaloniaResource Include="Resources\play.png" />
+    <AvaloniaResource Include="Resources\safemode.png" />
+    <AvaloniaResource Include="Resources\setting.png" />
+    <AvaloniaResource Include="Resources\uniprog.png" />
+    <AvaloniaResource Include="Resources\Unknown.bmp" />
+    <AvaloniaResource Include="Resources\Unknown1.bmp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.1.5.1" />
+    <PackageReference Include="RtfDomParser" Version="7.0.0" />
+    <PackageReference Include="ScottPlot.Avalonia" Version="5.0.34" />
+    <PackageReference Include="Simplecto.Avalonia.RichTextBox" Version="1.0.8" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <AssemblyAttribute Include="Markuse_mälupulk_2_0.BuildDateTime">
+      <_Parameter1>$([System.DateTime]::Now.ToString("s"))</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

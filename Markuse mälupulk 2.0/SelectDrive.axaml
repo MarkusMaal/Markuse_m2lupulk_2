@@ -1,0 +1,26 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="480" Height="280"
+        x:Class="Markuse_mälupulk_2_0.SelectDrive"
+        WindowStartupLocation="CenterOwner" ExtendClientAreaChromeHints="NoChrome" ExtendClientAreaToDecorationsHint="True"
+        CanResize="False"
+        Title="Valige markuse mälupulk süsteemid seade" ShowInTaskbar="False" Icon="/Resources/folder.png" Loaded="Window_Loaded"
+        PositionChanged="Window_PositionChanged" SizeChanged="Window_SizeChanged"
+        >
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="35" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="60" />
+    </Grid.RowDefinitions>
+    <Label Grid.Row="0" HorizontalAlignment="Center" Margin="5">Vali markuse mälupulk süsteemid seade</Label>
+    <DataGrid Grid.Row="1" Name="DriveList" IsReadOnly="True" SelectionChanged="DataGrid_SelectionChanged">
+    </DataGrid>
+    <StackPanel Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
+      <Button Margin="10,0,10,15" Click="Exit_Click">Sule programm</Button>
+      <Button Margin="0,0,15,15" Click="OK_Click" Name="ConfirmButton" IsEnabled="False">Kasuta seadet</Button>
+    </StackPanel>
+  </Grid>
+</Window>

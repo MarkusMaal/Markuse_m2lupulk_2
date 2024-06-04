@@ -1,0 +1,47 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="440"
+        x:Class="Markuse_mälupulk_2_0.SafeMode"
+        Title="SafeMode">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="50"/>
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <Panel Grid.Row="0" Margin="5">
+      <StackPanel Orientation="Horizontal">
+        <Label Margin="10,0" VerticalAlignment="Center">Nimetu irdseade</Label>
+        <Button >Järgmine seade</Button>
+      </StackPanel>
+      <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+        <Button Margin="5,0">Värskenda andmeid</Button>
+        <Button Margin="5,0">Tavarežiim</Button>
+      </StackPanel>
+    </Panel>
+    <Grid Grid.Row="1" ColumnDefinitions="*, 4, *">
+      <Rectangle Grid.Column="0" Fill="Blue"/>
+      <GridSplitter Grid.Column="1" Background="Black" ResizeDirection="Columns"/>
+      <Panel Grid.Column="2">
+        <StackPanel>
+          <Label FontSize="20">Navigatsioon</Label>
+          <Label>Artikkel 1/5</Label>
+          <WrapPanel>
+            <Button Margin="0,0,10,10">&lt;&lt; Eelmine</Button>
+            <Button Margin="0,0,10,10">Järgmine &gt;&gt;</Button>
+            <Button Margin="0,0,10,10">Laadi uuesti</Button>
+          </WrapPanel>
+          <Label FontSize="20">Esiletõstetud videod</Label>
+          <ListBox MinHeight="40">
+            
+          </ListBox>
+          <Button Margin="0,10">Esita</Button>
+        </StackPanel>
+        <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" TextWrapping="Wrap">
+          Topeltklõpsake vasakut paneeli, et see peita
+        </TextBlock>
+      </Panel>
+    </Grid>
+  </Grid>
+</Window>

@@ -1,0 +1,329 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:cc="using:AvRichTextBox"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+         xmlns:local="using:Markuse_mälupulk_2_0"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="640"
+        x:Class="Markuse_mälupulk_2._0.MainWindow"
+        Title="Markuse mälupulk" Loaded="Window_Loaded" 
+        x:DataType="local:MainWindowModel" Icon="/Resources/mas_flash.png"
+        x:CompileBindings="True"
+        >
+  <Grid RowDefinitions="2">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="100" />
+      <RowDefinition />
+      <RowDefinition Height="35" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition Width="450" />
+    </Grid.ColumnDefinitions>
+    <Panel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,-10" Name="TopPanel">
+      <Button Click="ExitApp" Name="FullScreenExit" VerticalAlignment="Top" HorizontalAlignment="Right" ZIndex="1" Margin="20" BorderBrush="White" Background="Maroon" CornerRadius="0" Padding="8" FontSize="18" IsVisible="False">X</Button>
+      <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Name="GradientBg">
+        <Panel.Background>
+          <LinearGradientBrush EndPoint="50%,100%" StartPoint="50%,0%">
+            <GradientStop Color="#0000"/>
+            <GradientStop Color="#ffff" Offset="1"/>
+          </LinearGradientBrush>
+        </Panel.Background>
+        <StackPanel VerticalAlignment="Center">
+          <Image Source="/Resources/mas_flash_wide.png" Width="100" Margin="0,15"></Image>
+          <Label FontSize="24" FontFamily="Segoe UI" HorizontalAlignment="Center" VerticalAlignment="Bottom">markuse mälupulk</Label>
+        </StackPanel>
+      </Panel>
+      <Panel.Background>
+        <ImageBrush Source="Resources/cool_pattern.png" Stretch="UniformToFill"></ImageBrush>
+      </Panel.Background>
+    </Panel>
+    <Panel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,-2">
+      <TabControl FontSize="12">
+        <!--Avaleht-->
+        <TabItem Header="Avaleht">
+          <Grid ColumnDefinitions="*, 2, *">
+            <Panel Grid.Column="0" Background="Black">
+              <cc:RichTextBox Name="NewsBox" Background="Transparent"></cc:RichTextBox>
+            </Panel>
+            <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns" Cursor="TopSide"></GridSplitter>
+            <Panel Grid.Column="2">
+              <StackPanel Margin="10">
+                <TextBlock Classes="BigText">Navigatsioon</TextBlock>
+                <Label>Artikkel 1/5</Label>
+                <WrapPanel HorizontalAlignment="Left" Margin="0,10">
+                  <Button Margin="0,0,10,0">&lt;&lt; Eelmine</Button>
+                  <Button Margin="0,0,10,0">Järgmine &gt;&gt;</Button>
+                  <Button Click="Reload_Click">Laadi uuesti</Button>
+                </WrapPanel>
+                <TextBlock Classes="BigText" Margin="0,10">Esiletõstetud videod</TextBlock>
+                <ListBox Name="VideoBox">
+                  <ListBoxItem>Video A</ListBoxItem>
+                  <ListBoxItem>Video B</ListBoxItem>
+                  <ListBoxItem>Video C</ListBoxItem>
+                </ListBox>
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10">
+                  <Button Margin="0,0,10,0">Esita</Button>
+                  <Button>Kõik videod</Button>
+                </WrapPanel>
+              </StackPanel>
+              <Label HorizontalAlignment="Right" VerticalAlignment="Bottom">Topeltklõpsake vasakut paneeli, et see peita</Label>
+            </Panel>
+          </Grid>
+        </TabItem>
+        <!-- Kaustad -->
+        <TabItem Header="Kaustad">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="280" />
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="200"/>
+              <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="0">
+              <TextBlock Classes="BigText" Margin="0,5">Kasutajad</TextBlock>
+              <ListBox MinHeight="200" Name="UsersBox" Tapped="UsersBoxTapped">
+                <ListBoxItem>Kasutaja A</ListBoxItem>
+                <ListBoxItem>Kasutaja B</ListBoxItem>
+                <ListBoxItem>Kasutaja C</ListBoxItem>
+              </ListBox>
+              <WrapPanel HorizontalAlignment="Right">
+                <Button Margin="10">-</Button>
+                <Button>+</Button>
+              </WrapPanel>
+            </StackPanel>
+            <Grid Grid.Row="0" Grid.Column="1" Margin="10">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition/>
+              </Grid.RowDefinitions>
+              <Panel Grid.Row="0" Height="40">
+                <TextBlock Name="BrowserTopText" Classes="BigText" Margin="0,0,0,10">Failisirvija</TextBlock>
+                <Label Name="HelpLink" HorizontalAlignment="Right" PointerReleased="HelpLink_Click" />
+              </Panel>
+              <DataGrid ItemsSource="{Binding Folders}" Name="FileBrowser" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" DoubleTapped="DataGrid_DoubleTapped">
+                <DataGrid.Columns>
+                  <DataGridTemplateColumn Header="Ikoon">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate>
+                        <Image Source="{Binding Image}" Width="32" Height="32" />
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTextColumn Header="Nimi" Binding="{Binding Name}" />
+                  <DataGridTextColumn Header="Tüüp" Binding="{Binding Type}" />
+                </DataGrid.Columns>
+              </DataGrid>
+            </Grid>
+            <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Bottom">
+              <Label Classes="SemiBigText">Kasutaja kaustad</Label>
+              <ListBox MaxHeight="140" Tapped="UserDirsTapped" Name="UserDirs" IsEnabled="False">
+                <ListBoxItem>Abi</ListBoxItem>
+                <ListBoxItem>Minu videod</ListBoxItem>
+                <ListBoxItem>Muud asjad</ListBoxItem>
+                <ListBoxItem>Muusika</ListBoxItem>
+                <ListBoxItem>Paigaldatavad failid</ListBoxItem>
+                <ListBoxItem>Pildid</ListBoxItem>
+                <ListBoxItem>PowerPoint</ListBoxItem>
+                <ListBoxItem>Tekst</ListBoxItem>
+                <ListBoxItem>Word</ListBoxItem>
+              </ListBox>
+            </StackPanel>
+            <Grid Grid.Row="1" Grid.Column="1" Margin="10,0">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition/>
+              </Grid.RowDefinitions>
+              <Label Classes="SemiBigText" Grid.Row="0">Muud kaustad</Label>
+              <WrapPanel Grid.Row="1" HorizontalAlignment="Left">
+                <WrapPanel.Styles>
+                  <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,0,10,10" />
+                  </Style>
+                </WrapPanel.Styles>
+                <Button Click="NavigateDirectory">Markuse asjad</Button>
+                <Button Click="NavigateDirectory">Kiirrakendused</Button>
+                <Button Click="NavigateDirectory">Esiletõstetud videod</Button>
+                <Button Click="NavigateDirectory">Abi ja info</Button>
+                <Button Click="NavigateDirectory">Skriptid</Button>
+                <Button Click="NavigateDirectory">Ventoy opsüsteemid</Button>
+                <Button Click="NavigateDirectory">Ventoy konfiguratsioon</Button>
+                <Button Click="NavigateDirectory">Ketta juurkaust</Button>
+                <Button Click="NavigateDirectory">Mine</Button>
+              </WrapPanel>
+            </Grid>
+          </Grid>
+        </TabItem>
+        <!-- Kiirrakendused -->
+        <TabItem Header="Kiirrakendused">
+          <SplitView>
+            <Grid ColumnDefinitions="*, 4, *">
+              <ListBox Name="QAppBox" Margin="5" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#8000" SelectionChanged="QAppBox_SelectionChanged">
+                <ListBoxItem>Rakendus A</ListBoxItem>
+                <ListBoxItem>Rakendus B</ListBoxItem>
+                <ListBoxItem>Rakendus C</ListBoxItem>
+                <ListBoxItem>Rakendus D</ListBoxItem>
+                <ListBoxItem>Rakendus E</ListBoxItem>
+              </ListBox>
+              <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns" Cursor="RightSide"/>
+              <Panel Grid.Column="2">
+                <Grid RowDefinitions="*, 4, *">
+                  <Image Name="QAppPreview" Grid.Row="0" Source="/Resources/f22170384.png" Stretch="None"/>
+                  <GridSplitter Grid.Row="1" Background="Transparent" ResizeDirection="Rows"/>
+                  <StackPanel Grid.Row="2" Margin="10,20">
+                    <TextBlock Name="QAppName" Classes="BigText">Kiirrakendused</TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                      <Button Click="OpenApp" Margin="0,10,10,0" Width="90" HorizontalContentAlignment="Center">Ava</Button>
+                      <Button Click="DeleteApp" Margin="0,10,10,0" Width="90" HorizontalContentAlignment="Center">Eemalda</Button>
+                      <Button Margin="0,10,10,0" Width="90" HorizontalContentAlignment="Center">Lisa</Button>
+                    </StackPanel>
+                    <TextBlock Name="QAppDescription" TextWrapping="Wrap" Margin="0,15">
+                      Kiirrakendused on nagu tavalised töölauarakendused, mida leiate enda arvutist, aga neil on eriline funktsioon: need töötavad kohe igas arvutis otse mälupulgalt.
+                    </TextBlock>
+                  </StackPanel>
+                </Grid>
+              </Panel>
+            </Grid>
+          </SplitView>
+        </TabItem>
+        <!-- Haldamine -->
+        <TabItem Header="Haldamine">
+          <StackPanel MaxWidth="800">
+            <TextBlock Classes="BigText">Teave</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="10">
+              <StackPanel Orientation="Horizontal" Margin="10">
+                <Rectangle Name="EditionBox" Fill="Gray" Width="100" Height="100"></Rectangle>
+                <StackPanel Margin="20,0" VerticalAlignment="Center">
+                  <Label Classes="SemiBigText">Markuse mälupulk</Label>
+                  <Label Name="EditionLabel">Tundmatu väljaanne</Label>
+                  <Label Name="CapacityLabel">Maht: 0 GiB (0GB)</Label>
+                  <Label Name="FilesystemLabel" Margin="0,-1">Failisüsteem: RAW</Label>
+                  <Label Name="DriveMountLabel" Margin="0,-1">Draiv: /dev/null</Label>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Margin="10">
+                <Image PointerPressed="Image_PointerPressed" Source="/Resources/mas_flash_wide.png" MaxWidth="100" MinHeight="100" Margin="10,0"/>
+                <StackPanel VerticalAlignment="Center" Margin="10">
+                  <Label Classes="SemiBigText">Markuse mälupulga juhtpaneel</Label>
+                  <Label Name="CpanelVersionLabel">Versioon: {asmver}</Label>
+                  <Label Name="CpanelDateLabel">Kuupäev: {filedate}</Label>
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+            <TextBlock Classes="BigText" Margin="0,10">Seadistused</TextBlock>
+            <CheckBox>Käivita see programm iga kord kui Markuse mälupulk on arvutisse sisestatud</CheckBox>
+            <CheckBox Click="Fullscreen_Toggle">Täisekraan</CheckBox>
+            <CheckBox IsChecked="True"> Muuda seadet andmete värskendamisel</CheckBox>
+            <TextBlock Classes="BigText" Margin="0,10">Haldamine</TextBlock>
+            <WrapPanel HorizontalAlignment="Left" VerticalAlignment="Top">
+              <WrapPanel.Styles>
+                <Style Selector="Button">
+                  <Setter Property="Margin" Value="0,0,10,10" />
+                </Style>
+              </WrapPanel.Styles>
+              <Button>Muuda mälupulga nime</Button>
+              <Button>Teisenda väljaandeks Ultimate</Button>
+              <Button>Värskenda andmeid</Button>
+              <Button>Ebaturvaline PIN kood</Button>
+              <Button>Varundushaldur</Button>
+              <Button>Lukusta haldusfunktsioonid</Button>
+              <Button>Muuda PIN koodi</Button>
+              <Button>Lisafunktsioonid</Button>
+            </WrapPanel>
+          </StackPanel>
+        </TabItem>
+        <!-- Statistika -->
+        <TabItem Header="Statistika">
+          <Grid>
+              <Label ZIndex="1" HorizontalAlignment="Center" Foreground="Black" Classes="SemiBigText" Margin="0,15">Mälupulga ruumikasutamise statistika</Label>
+              <ScottPlot:AvaPlot Name="SpaceUsage">
+            
+              </ScottPlot:AvaPlot>
+          </Grid>
+        </TabItem>
+        <!-- Arendamine -->
+        <TabItem Header="Arendamine">
+          <Panel>
+            <StackPanel>
+              <TextBlock Classes="BigText">Arendamine</TextBlock>
+              <Label Classes="SemiBigText" Margin="0,10,0,0">Esiletõstetud videote haldamine</Label>
+              <ListBox>
+                <ListBoxItem>Video A</ListBoxItem>
+                <ListBoxItem>Video B</ListBoxItem>
+                <ListBoxItem>Video C</ListBoxItem>
+              </ListBox>
+              <WrapPanel HorizontalAlignment="Left">
+                <WrapPanel.Styles>
+                  <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,10,10,10"></Setter>
+                  </Style>
+                </WrapPanel.Styles>
+                <Button>Lisa video</Button>
+                <Button>Asenda video</Button>
+                <Button>Rakenda muudatused</Button>
+              </WrapPanel>
+              <Label Classes="SemiBigText">Uudise lisamine</Label>
+              <WrapPanel HorizontalAlignment="Left">
+                <WrapPanel.Styles>
+                  <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,10,10,10"></Setter>
+                  </Style>
+                </WrapPanel.Styles>
+                <Button>RTF failist...</Button>
+                <Button>Loo ...</Button>
+                <Button>Arhiveeri uudis</Button>
+                <Button>Loe arhiveeritud uudised</Button>
+              </WrapPanel>
+              <Label Classes="SemiBigText">Uudise muutmine</Label>
+              <WrapPanel HorizontalAlignment="Left">
+                <WrapPanel.Styles>
+                  <Style Selector="Button">
+                    <Setter Property="Margin" Value="0,10,10,10"></Setter>
+                  </Style>
+                </WrapPanel.Styles>
+                <Button>Uudis 1</Button>
+                <Button>Uudis 2</Button>
+                <Button>Uudis 3</Button>
+                <Button>Uudis 4</Button>
+                <Button>Uudis 5</Button>
+              </WrapPanel>
+            </StackPanel>
+            <CheckBox HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10">Simulatsioonirežiim</CheckBox>
+            <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">Rakenda muudatused</Button>
+          </Panel>
+        </TabItem>
+      </TabControl>
+    </Panel>
+    <Panel Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0">
+      <StackPanel Orientation="Horizontal">
+        <ProgressBar Name="CollectProgress" IsIndeterminate="True" />
+        <Label Name="ConnectionStateLabel" Margin="10,0">seadmete tuvastmine...</Label>
+      </StackPanel>
+    </Panel>
+    <Panel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <Label Margin="10,0" HorizontalContentAlignment="Right" Name="DataCollectTip">Andmete kogumise aja saate juba laaditud funktsioone kasutada</Label>
+    </Panel>
+  </Grid>
+  <Window.Styles>
+    <Style Selector="TabItem > TextBlock">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="TabControl WrapPanel">
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="TextBlock.BigText">
+      <Setter Property="FontSize" Value="24"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style Selector="Label.SemiBigText">
+      <Setter Property="FontSize" Value="18"/>
+    </Style>
+  </Window.Styles>
+  <Design.DataContext>
+    <local:MainWindowModel />
+  </Design.DataContext>
+</Window>

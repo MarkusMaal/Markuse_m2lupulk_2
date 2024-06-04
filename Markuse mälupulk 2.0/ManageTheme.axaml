@@ -1,0 +1,20 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="400" d:DesignHeight="180"
+        x:Class="Markuse_mälupulk_2_0.ManageTheme"
+        Title="ManageTheme">
+  <Grid>
+    <StackPanel>
+      <Label FontSize="20" HorizontalAlignment="Center" Margin="0,10">Teema</Label>
+      <WrapPanel HorizontalAlignment="Center">
+        <Button Margin="5" Width="180" HorizontalContentAlignment="Center">Muuda tagaplaani värvi</Button>
+        <Button Margin="5" Width="180" HorizontalContentAlignment="Center">Muuda esiplaani värvi</Button>
+        <Button Margin="5" Width="180" HorizontalContentAlignment="Center">Muuda taustapilti</Button>
+        <Button Margin="5" Width="180" HorizontalContentAlignment="Center">Laadi teema</Button>
+      </WrapPanel>
+    </StackPanel>
+    <CheckBox HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="15">Kasuta üleminekuefekte</CheckBox>
+  </Grid>
+</Window>
