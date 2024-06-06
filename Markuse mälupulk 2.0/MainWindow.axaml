@@ -178,7 +178,7 @@
                     <StackPanel Orientation="Horizontal">
                       <Button Click="OpenApp" Margin="0,10,10,0" Width="90" HorizontalContentAlignment="Center">Ava</Button>
                       <Button Click="DeleteApp" Margin="0,10,10,0" Width="90" HorizontalContentAlignment="Center">Eemalda</Button>
-                      <Button Margin="0,10,10,0" Width="90" HorizontalContentAlignment="Center">Lisa</Button>
+                      <Button Click="AddApp" Margin="0,10,10,0" Width="90" HorizontalContentAlignment="Center">Lisa</Button>
                     </StackPanel>
                     <TextBlock Name="QAppDescription" TextWrapping="Wrap" Margin="0,15">
                       Kiirrakendused on nagu tavalised töölauarakendused, mida leiate enda arvutist, aga neil on eriline funktsioon: need töötavad kohe igas arvutis otse mälupulgalt.
@@ -198,7 +198,7 @@
                 <Rectangle Name="EditionBox" Fill="Gray" Width="100" Height="100"></Rectangle>
                 <StackPanel Margin="20,0" VerticalAlignment="Center">
                   <Label Classes="SemiBigText">Markuse mälupulk</Label>
-                  <Label Name="EditionLabel">Tundmatu väljaanne</Label>
+                  <TextBlock Name="EditionLabel" Classes="LinkLabel" PointerReleased="EditionLabel_Click">Tundmatu väljaanne</TextBlock>
                   <Label Name="CapacityLabel">Maht: 0 GiB (0GB)</Label>
                   <Label Name="FilesystemLabel" Margin="0,-1">Failisüsteem: RAW</Label>
                   <Label Name="DriveMountLabel" Margin="0,-1">Draiv: /dev/null</Label>
@@ -214,9 +214,9 @@
               </StackPanel>
             </StackPanel>
             <TextBlock Classes="BigText" Margin="0,10">Seadistused</TextBlock>
-            <CheckBox>Käivita see programm iga kord kui Markuse mälupulk on arvutisse sisestatud</CheckBox>
+            <CheckBox Name="AutostartCheck" Click="Autostart_Click">Käivita see programm iga kord kui Markuse mälupulk on arvutisse sisestatud</CheckBox>
             <CheckBox Click="Fullscreen_Toggle">Täisekraan</CheckBox>
-            <CheckBox IsChecked="True"> Muuda seadet andmete värskendamisel</CheckBox>
+            <CheckBox Name="SwitchDevice" IsChecked="True"> Muuda seadet andmete värskendamisel</CheckBox>
             <TextBlock Classes="BigText" Margin="0,10">Haldamine</TextBlock>
             <WrapPanel HorizontalAlignment="Left" VerticalAlignment="Top">
               <WrapPanel.Styles>
@@ -224,14 +224,14 @@
                   <Setter Property="Margin" Value="0,0,10,10" />
                 </Style>
               </WrapPanel.Styles>
-              <Button>Muuda mälupulga nime</Button>
-              <Button>Teisenda väljaandeks Ultimate</Button>
+              <Button Click="RenameFlash_Click">Muuda mälupulga nime</Button>
+              <Button Click="ConvertEdition_Click">Teisenda väljaandeks Ultimate</Button>
               <Button Click="ReloadData">Värskenda andmeid</Button>
-              <Button>Ebaturvaline PIN kood</Button>
-              <Button>Varundushaldur</Button>
+              <Button Click="LegacyPin_Click">Ebaturvaline PIN kood</Button>
+              <Button Click="BM_Click">Varundushaldur</Button>
               <Button Name="LockManagement" Click="LockFeatsClick" IsVisible="False">Lukusta haldusfunktsioonid</Button>
-              <Button>Muuda PIN koodi</Button>
-              <Button>Lisafunktsioonid</Button>
+              <Button Click="ChangePin_Click">Muuda PIN koodi</Button>
+              <Button Name="Extras" Click="Extras_Click">Lisafunktsioonid</Button>
             </WrapPanel>
           </StackPanel>
         </TabItem>
@@ -245,7 +245,7 @@
           </Grid>
         </TabItem>
         <!-- Arendamine -->
-        <TabItem Header="Arendamine" IsVisible="False">
+        <TabItem Name="DevTab" Header="Arendamine" IsVisible="False">
           <Panel Name="DevPanel">
             <StackPanel>
               <TextBlock Classes="BigText">Arendamine</TextBlock>
@@ -295,9 +295,9 @@
       </TabControl>
     </Panel>
     <Panel Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0">
-      <StackPanel Orientation="Horizontal" Margin="15,4">
-        <ProgressBar Name="CollectProgress" IsIndeterminate="True" Foreground="#8fff" />
-        <Label Name="ConnectionStateLabel" Margin="10,0">seadmete tuvastmine...</Label>
+      <StackPanel Orientation="Horizontal" Margin="0,4">
+        <ProgressBar Name="CollectProgress" IsIndeterminate="True" Foreground="#8fff" Margin="0,0,10,0" />
+        <Label Name="ConnectionStateLabel" Margin="0,0">seadmete tuvastmine...</Label>
       </StackPanel>
     </Panel>
     <Panel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom">
@@ -318,6 +318,13 @@
     </Style>
     <Style Selector="Label.SemiBigText">
       <Setter Property="FontSize" Value="18"/>
+    </Style>
+    <Style Selector="TextBlock.LinkLabel">
+      <Setter Property="Margin" Value="3,3" />
+    </Style>
+    <Style Selector="TextBlock.LinkLabel:pointerover">
+      <Setter Property="TextDecorations" Value="Underline"/>
+      <Setter Property="Cursor" Value="Hand"/>
     </Style>
   </Window.Styles>
   <Design.DataContext>

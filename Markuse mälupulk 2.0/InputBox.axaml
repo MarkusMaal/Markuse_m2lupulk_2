@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="500" Height="230"
+        x:Class="Markuse_mälupulk_2_0.InputBox" WindowStartupLocation="CenterOwner"
+        Title="" Icon="" ShowInTaskbar="False" Loaded="Window_Loaded">
+  <Panel>
+    <Label Name="Text" FontSize="25" Margin="15,30">InputMsg</Label>
+    <TextBox KeyDown="TextBox_KeyDown" Name="InputTxt" Margin="25" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+    <Button Click="Dialog_OK" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20" Padding="50,8">OK</Button>
+  </Panel>
+</Window>

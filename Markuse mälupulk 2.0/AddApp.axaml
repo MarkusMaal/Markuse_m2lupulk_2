@@ -6,18 +6,18 @@
         x:Class="Markuse_mälupulk_2_0.AddApp"
         Title="Kiirrakenduse lisamine">
   <Panel>
-    <Panel Name="Page1" Margin="20">
+    <Panel Name="Page1" Margin="20" IsVisible="True">
       <StackPanel>
         <Label>Rakenduse paigaldamine</Label>
-        <RadioButton IsChecked="True">Rakendus on juba mälupulgal</RadioButton>
+        <RadioButton Name="OnFlashCheck" IsChecked="True">Rakendus on juba mälupulgal</RadioButton>
         <RadioButton>Rakendus tuleb mälupulgale teisaldada</RadioButton>
       </StackPanel>
-      <Button HorizontalAlignment="Right" VerticalAlignment="Bottom">Edasi</Button>
+      <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="NextPage">Edasi</Button>
     </Panel>
     <Panel Name="Page2" Margin="20" IsVisible="False">
       <Label>Valige kiirrakendus</Label>
-      <ListBox Margin="0,40"></ListBox>
-      <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="80" HorizontalContentAlignment="Center">Jätka</Button>
+      <ListBox Name="listBox1" Margin="0,40"></ListBox>
+      <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="80" HorizontalContentAlignment="Center" Click="NextPage">Jätka</Button>
     </Panel>
     <Grid Name="Page3" Margin="20" IsVisible="False">
       <Grid.RowDefinitions>
@@ -28,22 +28,25 @@
         <ColumnDefinition />
         <ColumnDefinition />
       </Grid.ColumnDefinitions>
-      <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-        <Label>Metaandmete muutmine</Label>
-        <Label Margin="0,15,0,0">Rakenduse nimi: {nimi}</Label>
-        <Label>Käivitatav programm: {asukoht}</Label>
-        <Button Margin="0,15">Määra</Button>
-      </StackPanel>
+      <Panel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+        <Button Click="Finish_Setup" VerticalAlignment="Top" HorizontalAlignment="Right" MinWidth="100" HorizontalContentAlignment="Center">Valmis</Button>
+        <StackPanel>
+          <Label>Metaandmete muutmine</Label>
+          <Label Name="AppNameLabel" Margin="0,15,0,0">Rakenduse nimi: {nimi}</Label>
+          <Label Name="AppStartupExecutable">Käivitatav programm: {asukoht}</Label>
+          <Button Margin="0,15" Click="SetStartupExec_Click">Määra</Button>
+        </StackPanel>
+      </Panel>
       <Panel Grid.Row="1" Grid.Column="0">
         <Label>Kirjeldus</Label>
-        <TextBox Margin="0,40,0,0" CornerRadius="0"></TextBox>
+        <TextBox Name="AppDescription" Margin="0,40,0,0" CornerRadius="0" TextWrapping="Wrap" />
       </Panel>
       <Panel Grid.Row="1" Grid.Column="1">
         <StackPanel Orientation="Horizontal">
           <Label>Kuvatõmmis</Label>
-          <Button Margin="10,-4" HorizontalAlignment="Right" VerticalAlignment="Top">Muuda</Button>
+          <Button Margin="10,-4" HorizontalAlignment="Right" VerticalAlignment="Top" Click="UpdateAppPreview_Click">Muuda</Button>
         </StackPanel>
-        <Image Source="/Resources/abstract.png" Width="200" Height="140" Margin="0,30,0,0" Stretch="Fill" ZIndex="-1">
+        <Image Name="AppPreview" Source="/Resources/abstract.png" Width="200" Height="140" Margin="0,30,0,0" Stretch="Fill" ZIndex="-1">
           
         </Image>
       </Panel>

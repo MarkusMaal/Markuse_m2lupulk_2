@@ -4,28 +4,30 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" Width="640" Height="420"
         x:Class="Markuse_mälupulk_2_0.Extras"
-        Title="Extras">
+        Title="Lisa" Icon="/Resources/setting.png">
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
-      <RowDefinition Height="40"/>
+      <RowDefinition Height="45"/>
       <RowDefinition/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="250"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Source="/Resources/batchpanel.png" Stretch="None"></Image>
-    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontSize="20" Margin="15,0">Lisafunktsioonid</Label>
+    <Panel Name="TipImagePanel" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+      <Image Name="TipImage" Source="/Resources/f22170384.png" Stretch="None"></Image>
+    </Panel>
+    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontSize="20" Margin="15,5">Lisafunktsioonid</Label>
     <StackPanel Grid.Row="2" Grid.Column="0" Margin="15,0">
-      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Mälupulga pakkfail</Button>
-      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Turvarežiim</Button>
-      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Juhpaneeli pärandversioon</Button>
-      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Teema kohandamine</Button>
+      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Mälupulga pakkfail</Button>
+      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Turvarežiim</Button>
+      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Juhpaneeli pärandversioon</Button>
+      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Teema kohandamine</Button>
     </StackPanel>
     <StackPanel Grid.Row="2" Grid.Column="1">
-      <TextBlock FontSize="20" Margin="1" TextWrapping="Wrap">Lisainfo funktsiooni kohta</TextBlock>
-      <TextBlock Margin="0,5,15,0" TextWrapping="Wrap">Lisanduv info teatud funktsiooni kohta ilmub siia, kui viite kursori kindla nupu peale.</TextBlock>
+      <TextBlock FontSize="20" Margin="1" TextWrapping="Wrap" Name="TipTitle">Lisainfo funktsiooni kohta</TextBlock>
+      <TextBlock Margin="0,5,15,0" TextWrapping="Wrap" Name="TipText">Lisanduv info teatud funktsiooni kohta ilmub siia, kui viite kursori kindla nupu peale.</TextBlock>
     </StackPanel>
     
   </Grid>

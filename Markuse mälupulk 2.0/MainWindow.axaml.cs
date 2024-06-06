@@ -20,23 +20,31 @@ using System.Threading.Tasks;
 using System.Buffers.Text;
 using RtfDomParser;
 using System.Security.Cryptography;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using DocumentFormat.OpenXml.Presentation;
 
 namespace Markuse_mälupulk_2._0
 {
     public partial class MainWindow : Window
     {
         string mas_root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.mas";   // mas root directory
-        Color[] scheme = [Color.FromRgb(255, 255, 255), Color.FromRgb(0,0,0)];                          // default color scheme
+        internal Color[] scheme = [Color.FromRgb(255, 255, 255), Color.FromRgb(0,0,0)];                          // default color scheme
         string flash_root = "";                                                                         // flash drive root directory
-        bool testing = true;                                                                            // avoid loading content when we're in axaml view
+        readonly bool testing = true;                                                                            // avoid loading content when we're in axaml view
+        internal string VerifileStatus = "BYPASS";
         string current_pin = "";
-        List<double> sts = new List<double>();
-        List<string> list = new List<string>();
+        readonly List<double> sts = [];
+        readonly List<string> list = [];
+        Thread[]? threads;
+        readonly DispatcherTimer CheckIfConnected = new();
         bool canContinue = true;
+        bool isChild = false;
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new MainWindowModel();
+            CheckIfConnected.Interval = new TimeSpan(0, 0, 5);
+            CheckIfConnected.Tick += CheckIfConnected_Tick;
             foreach (Process p in Process.GetProcesses())
             {
                 if (p.ProcessName.Contains("Markuse mälupulk")) 
@@ -53,7 +61,54 @@ namespace Markuse_mälupulk_2._0
 
         private async void Window_Loaded(object? sender, RoutedEventArgs e)
         {
-            LoadTheme();
+            LinearGradientBrush? lgb = (LinearGradientBrush?)GradientBg.Background;
+            if (lgb != null)
+            {
+                lgb.GradientStops[1].Color = (this.Background as SolidColorBrush).Color;
+            }
+            VerifileStatus = Verifile2();
+            if (!isChild)
+            {
+                if (File.Exists(mas_root + "/edition.txt"))
+                {
+                    switch (VerifileStatus)
+                    {
+                        case "VERIFIED":
+                            break;
+                        case "FOREIGN":
+                            await MessageBoxShow("Käivitasite programmi seadmes, mis ei vasta Markuse asjad süsteemi standarditele. Pange tähele, et teatud funktsionaalsus ei ole seetõttu saadaval.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                            return;
+                        case "FAILED":
+                            await MessageBoxShow("Verifile püsivuskontrolli läbimine nurjus. Programm ei tööta seadmetes, mis on valesti juurutatud.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                            this.Close();
+                            return;
+                        case "TAMPERED":
+                            await MessageBoxShow("See arvuti pole õigesti juurutatud. Seda võis põhjustada hiljutine riistvaramuudatus. Palun kasutage juurutamiseks Markuse asjade juurutamistööriista. Programm ei tööta seadmetes, mis on valesti juurutatud.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                            this.Close();
+                            return;
+                        case "LEGACY":
+                            await MessageBoxShow("See arvuti on juurutatud vana juurutamistööriistaga. Palun juurutage arvuti uuesti uue juurutamistarkvaraga. Programm ei tööta seadmetes, mis on valesti juurutatud.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                            this.Close();
+                            return;
+                    }
+                    if (Verifile())
+                    {
+                        LoadTheme();
+                    }
+                }
+                else
+                {
+                    await MessageBoxShow("Käivitasite programmi seadmes, mis ei vasta Markuse asjad süsteemi standarditele. Pange tähele, et teatud funktsionaalsus ei ole seetõttu saadaval.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                }
+            }
+            else
+            {
+                if ((VerifileStatus != "FOREIGN") || (VerifileStatus != "VERIFIED"))
+                {
+                    this.Close();
+                    return;
+                }
+            }
             QAppPreview.Source = (Application.Current.Resources["Info"] as Image).Source;
             CreatePieChart(new Dictionary<string, int>() // create dummy pie chart for testing purposes
             {
@@ -84,6 +139,36 @@ namespace Markuse_mälupulk_2._0
             }
         }
 
+        private async void CheckIfConnected_Tick(object? sender, EventArgs e)
+        {
+            if (ConnectionStateLabel.Content == null) { return; }
+            if (!Directory.Exists(flash_root))
+            {
+                if (ConnectionStateLabel.Content.ToString() == "pole ühendatud")
+                {
+                    CheckIfConnected.IsEnabled = false;
+                    MsBox.Avalonia.Enums.ButtonResult result = await MessageBoxShow("Seade pole enam ühendatud. Kas soovite muu seadme valida?", "", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Warning);
+                    if (result == MsBox.Avalonia.Enums.ButtonResult.Yes)
+                    {
+                        SwitchDevice.IsChecked = true;
+                        ReloadData(sender, null);
+                    }
+                    else
+                    {
+                        _ = await MessageBoxShow("Sisestage seade ja vajutage OK, et jätkata", "Mälupulka pole ühendatud", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                        CheckIfConnected.IsEnabled = true;
+                    }
+                }
+                ConnectionStateLabel.Content = "pole ühendatud";
+            }
+            else
+            {
+                ConnectionStateLabel.Content = "ühendatud";
+                this.Title = "Markuse mälupulk (" + flash_root + ")";
+            }
+            DevTab.IsVisible = LockManagement.IsVisible;
+        }
+
         private int SafeIntConversion(double value)
         {
             return (int)(value / 1000.0);
@@ -95,8 +180,11 @@ namespace Markuse_mälupulk_2._0
             CollectProgress.IsIndeterminate = false;
             CollectProgress.Value = 0;
             ConnectionStateLabel.Content = "info kogumine...";
-            DispatcherTimer waitForExit = new();
-            waitForExit.Interval = new TimeSpan(0, 0, 1);
+            CheckIfConnected.IsEnabled = false;
+            DispatcherTimer waitForExit = new()
+            {
+                Interval = new TimeSpan(0, 0, 1)
+            };
             waitForExit.Tick += (object? sender, EventArgs e) =>
             {
                 if (list.Count >= 6)
@@ -106,10 +194,14 @@ namespace Markuse_mälupulk_2._0
                     string[] requiredFields = ["Markuse asjad", "Operatsioonsüsteemid", "Pakkfailid", "Kiirrakendused", "PlayStation mängud"];
                     for (int i = 0; i < list.Count; i++)
                     {
+                        if (i > sts.Count - 1)
+                        {
+                            break;
+                        }
                         switch (list[i])
                         {
                             case "markuse asjad":
-                                if (!stats.ContainsKey("Markuse asjad"))
+                                if (!stats.ContainsKey("Markuse asjad") && (i < sts.Count))
                                 {
                                     stats.Add("Markuse asjad", SafeIntConversion(sts[i]));
                                 }
@@ -147,7 +239,7 @@ namespace Markuse_mälupulk_2._0
                                 }
                                 break;
                             case "PlayStation mängud":
-                                if (!stats.ContainsKey("PlayStation mängud"))
+                                if (!stats.ContainsKey("PlayStation mängud") && (i < sts.Count))
                                 {
                                     stats.Add("PlayStation mängud", SafeIntConversion(sts[i]));
                                 }
@@ -174,12 +266,15 @@ namespace Markuse_mälupulk_2._0
                     waitForExit.IsEnabled = false;
                 }
             };
-            DispatcherTimer dpt = new DispatcherTimer();
-            dpt.Interval = new TimeSpan(0, 0, 0, 0, 20);
+            DispatcherTimer dpt = new DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 5)
+            };
             dpt.Tick += (object? sender, EventArgs e) =>
             {
                 if (CollectProgress.Value == CollectProgress.Maximum)
                 {
+                    CheckIfConnected.Start();
                     ConnectionStateLabel.Content = "ühendatud";
                     dpt.IsEnabled = false;
                     CollectProgress.IsVisible = false;
@@ -235,6 +330,19 @@ namespace Markuse_mälupulk_2._0
                                 QAppBox.Items.Add(d.Name);
                             }
                             break;
+                        case 43:
+                            if (File.Exists(mas_root + "/settings2.sf"))
+                            {
+                                string[] vs = File.ReadAllText(mas_root + "/settings2.sf", Encoding.ASCII).Split('=');
+                                if (vs[1].ToString() == "true")
+                                {
+                                    AutostartCheck.IsChecked = true;
+                                } else
+                                {
+                                    AutostartCheck.IsChecked = false;
+                                }
+                            }
+                            break;
                         case 50:
                             string edition = File.ReadAllText(flash_root + "/E_INFO/edition.txt");
                             switch (edition.ToLower())
@@ -249,7 +357,7 @@ namespace Markuse_mälupulk_2._0
                                     EditionBox.Fill = new SolidColorBrush(Colors.BlueViolet);
                                     break;
                             }
-                            EditionLabel.Content = "Väljaanne: " + edition;
+                            EditionLabel.Text = "Väljaanne: " + edition;
                             break;
                         case 55:
                             DriveInfo di = new DriveInfo(flash_root);
@@ -264,12 +372,18 @@ namespace Markuse_mälupulk_2._0
                             CpanelVersionLabel.Content = "Versioon: " + assembly.GetName()?.Version?.ToString();
                             break;
                         case 65:
-                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/markuse asjad"))).Start();
-                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/multiboot"))).Start();
-                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/sources"))).Start();
-                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/Pakkfailid"))).Start();
-                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/Kiirrakendused"))).Start();
-                            new Thread(() => GetGameSize()).Start();
+                            Thread[] th = [
+                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/markuse asjad"))),
+                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/multiboot"))),
+                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/sources"))),
+                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/Pakkfailid"))),
+                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/Kiirrakendused"))),
+                                new Thread(() => GetGameSize())
+                            ];
+                            threads = th;
+                            foreach (Thread t in threads) {
+                                t.Start();
+                            }
                             waitForExit.Start();
                             canContinue = false;
                             break;
@@ -324,12 +438,14 @@ namespace Markuse_mälupulk_2._0
             gamedirsize += DirSize(new DirectoryInfo(flash_root + "/DVD"));
             sts.Add(gamedirsize);
             list.Add("PlayStation mängud");
+            Thread.CurrentThread.Interrupt();
         }
 
         public void GetDirSize(DirectoryInfo d)
         {
             sts.Add(DirSize(d));
             list.Add(d.Name);
+            Thread.CurrentThread.Interrupt();
         }
 
 
@@ -395,10 +511,34 @@ namespace Markuse_mälupulk_2._0
             NewsBox.LoadRtfDoc(@"G:\E_INFO\arhiiv\uudis1.rtf");
         }
 
+        private static string Asgasggas(string sc){string s = sc;string a = s[..(s.Length / 2)];string b = s[(s.Length / 2)..];
+        string c = "";for (int i = 0; i < b.Length; i++){c += (char)(b[i] - 1);if (i < a.Length){c += (char)(a[i] - 1);}}return c;}
         private void LoadTheme()
         {
+            string? asoighiughw = VerifileStatus;
+            byte[] data = [0xEF, 0xBB, 0xBF, 0x0B, 0x75, 0x6A, 0x68, 0x74, 0x73, 0x6E, 0x6D, 0x21, 0x21, 0x47, 0x4B, 0x58, 0x48, 0x23,
+                           0x0E, 0x74, 0x73, 0x6F, 0x21, 0x21, 0x21, 0x64, 0x62, 0x63, 0x66, 0x54, 0x63, 0x75, 0x6A, 0x68, 0x31, 0x21,
+                           0x6A, 0x75, 0x29, 0x64, 0x62, 0x63, 0x66, 0x4D, 0x6F, 0x75, 0x21, 0x21, 0x2A, 0x3C, 0x0B, 0x75, 0x6A, 0x68,
+                           0x63, 0x3E, 0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x76, 0x74, 0x73, 0x6F, 0x29, 0x6A, 0x75, 0x29, 0x64, 0x62, 0x63,
+                           0x66, 0x4D, 0x6F, 0x75, 0x21, 0x21, 0x2A, 0x3C, 0x0B, 0x75, 0x6A, 0x68, 0x64, 0x3E, 0x23, 0x3C, 0x0B, 0x70,
+                           0x21, 0x6A, 0x75, 0x6A, 0x3E, 0x31, 0x21, 0x21, 0x21, 0x2F, 0x66, 0x68, 0x69, 0x21, 0x2C, 0x2A, 0x0B, 0x0E,
+                           0x64, 0x2C, 0x21, 0x64, 0x62, 0x2A, 0x63, 0x6A, 0x21, 0x21, 0x2A, 0x0E, 0x6A, 0x21, 0x6A, 0x3D, 0x62, 0x4D,
+                           0x6F, 0x75, 0x2A, 0x0B, 0x0E, 0x64, 0x2C, 0x21, 0x64, 0x62, 0x2A, 0x62, 0x6A, 0x21, 0x21, 0x2A, 0x0E, 0x7E,
+                           0x0B, 0x73, 0x75, 0x73, 0x21, 0x3C, 0x0E, 0x74, 0x73, 0x6F, 0x21, 0x64, 0x62, 0x63, 0x66, 0x3E, 0x23, 0x4B,
+                           0x46, 0x54, 0x47, 0x3C, 0x0B, 0x75, 0x6A, 0x68, 0x62, 0x3E, 0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x76, 0x74, 0x73,
+                           0x6F, 0x29, 0x2D, 0x29, 0x6F, 0x2A, 0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x66, 0x68, 0x69, 0x30, 0x33, 0x2A, 0x0E,
+                           0x74, 0x73, 0x6F, 0x21, 0x21, 0x21, 0x64, 0x62, 0x63, 0x66, 0x54, 0x63, 0x75, 0x6A, 0x68, 0x29, 0x6F, 0x2A,
+                           0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x66, 0x68, 0x69, 0x30, 0x33, 0x2A, 0x0E, 0x74, 0x73, 0x6F, 0x21, 0x21, 0x21,
+                           0x23, 0x0E, 0x67, 0x73, 0x29, 0x6F, 0x21, 0x21, 0x21, 0x3C, 0x6A, 0x3D, 0x63, 0x4D, 0x6F, 0x75, 0x3C, 0x6A,
+                           0x2C, 0x0E, 0x7C, 0x0B, 0x21, 0x3E, 0x29, 0x69, 0x73, 0x29, 0x5C, 0x5E, 0x2E, 0x32, 0x3C, 0x0B, 0x67, 0x29,
+                           0x21, 0x21, 0x2F, 0x66, 0x68, 0x69, 0x0E, 0x7C, 0x0B, 0x21, 0x3E, 0x29, 0x69, 0x73, 0x29, 0x5C, 0x5E, 0x2E,
+                           0x32, 0x3C, 0x0B, 0x0E, 0x7E, 0x66, 0x76, 0x6F, 0x64];
+            string aighoauisg = Encoding.UTF8.GetString(data); string? wihgouiwww = CSharpScript.
+                EvaluateAsync(string.Concat(Asgasggas(aighoauisg).AsSpan(4), ";")).Result.ToString();
+
             if (File.Exists(mas_root + "/bg_common.png"))
             {
+                if (asoighiughw != wihgouiwww) { return; }
                 ImageBrush ib = new()
                 {
                     Source = new Bitmap(mas_root + "/bg_common.png"),
@@ -406,6 +546,7 @@ namespace Markuse_mälupulk_2._0
                 };
                 TopPanel.Background = ib;
             }
+            if (asoighiughw != wihgouiwww) { return; }
             if (File.Exists(mas_root + "/scheme.cfg"))
             {
                 string[] schemeData = File.ReadAllText(mas_root + "/scheme.cfg").Split(';');
@@ -618,15 +759,6 @@ namespace Markuse_mälupulk_2._0
             UserDirs.IsEnabled = UsersBox.SelectedItems?.Count > 0;
         }
 
-
-        // Reimplementation of WinForms MessageBox.Show
-        private Task<MsBox.Avalonia.Enums.ButtonResult> MessageBoxShow(string message, string caption = "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum buttons = MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon icon = MsBox.Avalonia.Enums.Icon.None)
-        {
-            var box = MessageBoxManager.GetMessageBoxStandard(caption, message, buttons, icon);
-            var result = box.ShowWindowDialogAsync(this);
-            return result;
-        }
-
         private void HelpLink_Click(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
         {
             MainWindowModel? mwm = (MainWindowModel?)this.DataContext;
@@ -713,6 +845,8 @@ namespace Markuse_mälupulk_2._0
                 {
                     DevPanel.IsVisible = false;
                     Parool p = new();
+                    p.Background = this.Background;
+                    p.Foreground = this.Foreground;
                     if (File.Exists(flash_root + "/NTFS/spin.sys"))
                     {
                         if (current_pin != File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString())
@@ -780,10 +914,413 @@ namespace Markuse_mälupulk_2._0
             LockManagement.IsVisible = false;
         }
 
-        private void ReloadData(object? sender, RoutedEventArgs e) {
-            MainWindow mw = new();
-            mw.Show();
-            this.Close();
+        private void ReloadData(object? sender, RoutedEventArgs? e) {
+            if (SwitchDevice.IsChecked ?? false)
+            {
+                MainWindow mw = new();
+                mw.isChild = true;
+                mw.scheme = this.scheme;
+                mw.Show();
+                this.Close();
+            } else
+            {
+                LoadTheme();
+                QAppPreview.Source = (Application.Current.Resources["Info"] as Image).Source;
+                CreatePieChart(new Dictionary<string, int>() // create dummy pie chart for testing purposes
+                {
+                    { "1", 20 },
+                    { "2", 32 },
+                    { "3", 24 },
+                    { "4", 11 },
+                    { "5", 64 },
+                    { "6", 5 },
+                    { "Vaba ruum", 100 },
+                });
+                sts.Clear();
+                list.Clear();
+                canContinue = true;
+                threads = [];
+                CollectInfo();
+            }
+        }
+
+        private async void AddApp(object? sender, RoutedEventArgs e)
+        {
+            AddApp aa = new()
+            {
+                flash_root = flash_root
+            };
+            await aa.ShowDialog(this).WaitAsync(CancellationToken.None);
+            MsBox.Avalonia.Enums.ButtonResult msgbox = await MessageBoxShow("Värskendan andmeid?", "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Question).WaitAsync(CancellationToken.None);
+            if (msgbox == MsBox.Avalonia.Enums.ButtonResult.Yes)
+            {
+                ReloadData(sender, e);
+            }
+        }
+
+        private void Autostart_Click(object? sender, RoutedEventArgs e)
+        {
+            if (CollectProgress.IsVisible) { return; }
+            File.WriteAllText(mas_root + "/settings2.sf", "AutoRun=" + (AutostartCheck.IsChecked ?? false).ToString().ToLower(), Encoding.ASCII);
+        }
+
+        private void EditionLabel_Click(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        {
+            if (e.Pointer.IsPrimary && (EditionLabel.Text != null))
+            {
+                List<string> features = [];
+                if (File.Exists(flash_root + "/E_INFO/edition.txt")) { features.Add("Integratsioon Markuse arvutiga"); };
+                if (File.Exists(flash_root + "/E_INFO/uudis1.rtf")) { features.Add("Uudised ja lisainfo mälupulga kohta"); };
+                if (File.Exists(flash_root + "/E_INFO/videod.txt") && Directory.Exists(flash_root + "/Markuse_videod")) { features.Add("Uusimad videod"); };
+                if (File.Exists(flash_root + "/NTFS/spin.sys")) { features.Add("Turvalise PIN koodi tugi"); };
+                if (File.Exists(flash_root + "/NTFS/config.sys")) { features.Add("Ebaturvalise PIN koodi tugi"); };
+                if (Directory.Exists(flash_root + "/Batch") || Directory.Exists(flash_root + "/Pakkfailid")) { features.Add("Pakkfailid"); };
+                if (Directory.Exists(flash_root + "/markuse asjad/markuse asjad")) { features.Add("Markuse kaustad"); };
+                if (Directory.Exists(flash_root + "/markuse asjad/Kiirrakendused")) { features.Add("Kiirrakendused"); };
+                if (Directory.Exists(flash_root + "/multiboot")) { features.Add("Operatsioonsüsteemide käivitamine mälupulgalt"); };
+                if (File.Exists(flash_root + "/CD/games.bin") || File.Exists(flash_root + "/DVD/games.bin")) { features.Add("PS2 mängude laadimine mälupulgalt"); };
+                if (File.Exists(flash_root + "/POPS/POPSTARTER.ELF") && File.Exists(flash_root + "/POPS/POPS_IOX.PAK")) { features.Add("PS1 mängude laadimine mälupulgalt"); };
+                if (File.Exists(flash_root + "/autorun.inf") && File.Exists(flash_root + "/mas_flash.ico")) { features.Add("Kohandatud ikoon ja pikk draivi nimi"); };
+                if (File.Exists(flash_root + "/autorun.inf") && !File.Exists(flash_root + "/mas_flash.ico")) { features.Add("Pikk draivi nimi"); };
+                if (File.Exists(flash_root + "/markuse asjad/markuse asjad/kasutajad.txt") && File.Exists(flash_root + "/E_INFO/videod.txt")) { features.Add("Ühilduvus varasemate mälupulga programmidega"); };
+                if (File.Exists(flash_root + "/NTFS/config.sys") && (new DriveInfo(flash_root).DriveType == DriveType.Removable)) { features.Add("Mälupulga lahtilukustuse tugi"); };
+                if ((EditionLabel.Text.Contains("Ultimate") || EditionLabel.Text.Contains("Premium")) && (File.Exists(flash_root + "/E_INFO/convert.bat"))) { features.Add("Väljaande muutmine"); }
+                string featurestr = "";
+                foreach (string feature in features)
+                {
+                    featurestr += " - " + feature + "\n";
+                }
+                _ = MessageBoxShow(EditionLabel.Text + "\nSee väljanne sisaldab järgmisi funktsioone:\n" + featurestr, "Täpsem info väljaande kohta", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Setting);
+            }
+        }
+
+        private void Extras_Click(object? sender, RoutedEventArgs e)
+        {
+            Extras ex = new()
+            {
+                Background = this.Background,
+                Foreground = this.Foreground,
+                parent = this
+            };
+            
+            ex.Show();
+        }
+
+        private async void RenameFlash_Click(object? sender, RoutedEventArgs e)
+        {
+            InputBox ib = new();
+            ib.Text.Content = "Sisestage uus mälupulga nimi";
+            ib.Title = "Mälupulga nime muutmine";
+            ib.Background = new SolidColorBrush(scheme[0]);
+            ib.Foreground = new SolidColorBrush(scheme[1]);
+            EncodingProvider ppp = CodePagesEncodingProvider.Instance;
+            Encoding.RegisterProvider(ppp);
+            await ib.ShowDialog(this).WaitAsync(CancellationToken.None);
+            if (ib.result)
+            {
+                try
+                {
+                    string content = "[Autorun]\r\nlabel=" + ib.InputTxt.Text + "\r\nicon=autorun.exe,0\r\n";
+                    File.WriteAllText(flash_root + "/autorun.inf", content, Encoding.GetEncoding("windows-1252"));
+                    _ = MessageBoxShow("Mälupulga nimi muudeti edukalt. Väljutage mälupulk ja sisestage see uuesti, et muudatusi näha", "Toiming õnnestus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+                }
+                catch (Exception ex)
+                {
+                    _ = MessageBoxShow(ex.Message, "Midagi läks valesti", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                }
+            } else
+            {
+                _ = MessageBoxShow("Kasutaja katkestas toimingu", "Mälupulga nime ei muudetud", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Setting);
+            }
+        }
+
+        private async void ConvertEdition_Click(object? sender, RoutedEventArgs e)
+        {
+            if (Directory.Exists(flash_root + "/markuse asjad/Kasutajad") && ((new DirectoryInfo(flash_root + "/markuse asjad/Kasutajad").Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint))
+            {
+                _ = MessageBoxShow("Tegemist on UKSS v2.0 süsteemi mälupulgaga. Teisendamisfunktsioon pole veel implementeeritud.", "Teisenda väljaandeks", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                return;
+            }
+            //teisenda väljaandeks
+            if (File.Exists(flash_root + "/NTFS/config.sys"))
+            {
+                Parool p = new();
+                p.Background = this.Background;
+                p.Foreground = this.Foreground;
+                if (p.currentpin != File.ReadAllLines(flash_root + "/NTFS/config.sys", Encoding.ASCII)[0].ToString())
+                {
+                    p.Title = "Kinnitamiseks sisestage PIN kood";
+                    p.currentpin = "";
+                    await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+                    string s = File.ReadAllLines(flash_root + "/NTFS/config.sys", Encoding.ASCII)[0].ToString();
+                    if (p.currentpin != s)
+                    {
+                        _ = MessageBoxShow("Vale PIN kood", "Toiming katkestati", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                        return;
+                    }
+                }
+            }
+            MsBox.Avalonia.Enums.ButtonResult result = await MessageBoxShow("See funktsioon võimaldab Markuse mälupulga väljaande teisendada. Kui te teisendate Premium -> Ultimate, siis lisanduvad järgnevad funktsioonid/kui teisendate Ultimate -> Premium kaovad järgmised funktsioonid:\n\nKaustad\nKiirrakendused\n\nKas olete kindel, et soovite jätkata?", "Väljaande teisendamine", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Warning);
+            if (result == MsBox.Avalonia.Enums.ButtonResult.Yes)
+            {
+                if (File.Exists(flash_root + "/E_INFO/convert.bat"))
+                {
+                    Process p = new();
+                    p.StartInfo.FileName = flash_root + "/E_INFO/convert.bat";
+                    p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.WorkingDirectory = flash_root + "/E_INFO";
+                    p.Start();
+                }
+                else
+                {
+                    _ = MessageBoxShow("Teisendusprogrammi ei eksisteeri. Kui teie seade kasutab Basic väljaannet, ei ole seda võimalik teisendada.", "Ei saa teisendada", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                }
+            }
+            else
+            {
+                _ = MessageBoxShow("Toiming katkestati", "Muudatusi ei tehtud", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Setting);
+            }
+        }
+
+
+        private async void LegacyPin_Click(object? sender, RoutedEventArgs e)
+        {
+            //muuda pin koodi
+            try
+            {
+                if (!Directory.Exists(flash_root + "/NTFS")) { Directory.CreateDirectory(flash_root + "/NTFS"); }
+            }
+            catch
+            {
+                _ = MessageBoxShow("Juurdepääs asukohale \"" + flash_root + "/NTFS\" puudub. Kas seade on ühendatud?", "Ei saa PIN koodi muuta", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                return;
+            }
+            Parool p = new()
+            {
+                Background = this.Background,
+                Foreground = this.Foreground
+            };
+            MsBox.Avalonia.Enums.ButtonResult result = await MessageBoxShow("Kas soovite sisse lülitada ebaturvalise PIN-koodi? See on vajalik, kui soovite mälupulka hallata vanemate programmidega. Pange tähele, et ebaturvaline PIN kood ei ole krüptitud ning lihtsasti kättesaadav ükskõik millisele kasutajale.", "Ebaturvalise PIN-koodi seadistamine", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Warning);
+            if (result == MsBox.Avalonia.Enums.ButtonResult.Yes)
+            {
+                if (File.Exists(flash_root + "/NTFS/spin.sys"))
+                {
+                    if (current_pin != File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString())
+                    {
+                        p.Title = "Kinnitamiseks sisestage vana PIN kood";
+                        p.currentpin = "";
+                        await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+                        string s = File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString();
+
+                        byte[] correct = MD5.Create().ComputeHash(Encoding.ASCII.GetBytes(p.currentpin));
+                        string cstr = "";
+                        foreach (byte b in correct)
+                        {
+                            cstr += b.ToString("X2");
+                        }
+                        if (cstr != s)
+                        {
+                            _ = MessageBoxShow("Vale PIN kood", "Toiming katkestati", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                            return;
+                        }
+                        else
+                        {
+                            LockManagement.IsVisible = true;
+                        }
+                    }
+                }
+                p = new()
+                {
+                    Background = this.Background,
+                    Foreground = this.Foreground,
+                    Title = "Sisestage uus PIN kood",
+                    currentpin = ""
+                };
+                await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+                try
+                {
+                    File.WriteAllText(flash_root + "/NTFS/config.sys", p.currentpin + "\n", Encoding.ASCII);
+                    _ = MessageBoxShow("Uus PIN kood salvestati edukalt", "Toiming õnnestus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+                }
+                catch (Exception ex)
+                {
+                    _ = MessageBoxShow(ex.Message, "PIN koodi salvestamine nurjus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                }
+            }
+            else
+            {
+                File.WriteAllText(flash_root + "/NTFS/config.sys", "Ebaturvaline PIN kood keelatud\nInsecure authentication code disabled\n", Encoding.ASCII);
+                _ = MessageBoxShow("Ebaturvaline PIN kood lülitati edukalt välja", "Toiming õnnestus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+            }
+        }
+
+        private async void ChangePin_Click(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!Directory.Exists(flash_root + "/NTFS")) { Directory.CreateDirectory(flash_root + "/NTFS"); }
+            }
+            catch
+            {
+                _ = MessageBoxShow("Juurdepääs asukohale \"" + flash_root + "/NTFS\" puudub. Kas seade on ühendatud?", "Ei saa PIN koodi muuta", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                return;
+            }
+            Parool p = new()
+            {
+                Background = this.Background,
+                Foreground = this.Foreground
+            };
+            if (File.Exists(flash_root + "/NTFS/spin.sys"))
+            {
+                if (current_pin != File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString())
+                {
+                    p.Title = "Kinnitamiseks sisestage vana PIN kood";
+                    p.currentpin = "";
+                    await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+                    string s = File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString();
+
+                    byte[] correct = MD5.HashData(Encoding.ASCII.GetBytes(p.currentpin));
+                    string cstr = "";
+                    foreach (byte b in correct)
+                    {
+                        cstr += b.ToString("X2");
+                    }
+                    if (cstr != s)
+                    {
+                        _ = MessageBoxShow("Vale PIN kood", "Toiming katkestati", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                        return;
+                    }
+                    else
+                    {
+                        LockManagement.IsVisible = true;
+                    }
+                }
+            }
+            p = new()
+            {
+                Title = "Sisestage uus PIN kood",
+                currentpin = "",
+                Background = this.Background,
+                Foreground = this.Foreground
+            };
+            await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+            try
+            {
+                byte[] correct = MD5.Create().ComputeHash(Encoding.ASCII.GetBytes(p.currentpin));
+                string cstr = "";
+                foreach (byte b in correct)
+                {
+                    cstr += b.ToString("X2");
+                }
+                File.WriteAllText(flash_root + "/NTFS/spin.sys", cstr + "\n", Encoding.ASCII);
+                _ = MessageBoxShow("Uus PIN kood salvestati edukalt", "Toiming õnnestus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+            }
+            catch (Exception ex)
+            {
+                _ = MessageBoxShow(ex.Message, "PIN koodi salvestamine nurjus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+            }
+        }
+
+        private async void BM_Click(object? sender, RoutedEventArgs e)
+        {
+            if (File.Exists(flash_root + "/NTFS/spin.sys"))
+            {
+                Parool p = new();
+                if (current_pin != File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString())
+                {
+                    p.Title = "Kinnitamiseks sisestage vana PIN kood";
+                    p.currentpin = "";
+                    p.Background = this.Background;
+                    p.Background = this.Background;
+                    await p.ShowDialog(this).WaitAsync(CancellationToken.None);
+                    string s = File.ReadAllLines(flash_root + "/NTFS/spin.sys", Encoding.ASCII)[0].ToString();
+
+                    byte[] correct = MD5.HashData(Encoding.ASCII.GetBytes(p.currentpin));
+                    string cstr = "";
+                    foreach (byte b in correct)
+                    {
+                        cstr += b.ToString("X2");
+                    }
+                    if (cstr != s)
+                    {
+                        _ = MessageBoxShow("Vale PIN kood", "Toiming katkestati", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                        return;
+                    }
+                    else
+                    {
+                        LockManagement.IsVisible = true;
+                    }
+                }
+            }
+            else
+            {
+                if (File.Exists(flash_root + "/NTFS/config.sys"))
+                {
+                    _ = MessageBoxShow("Varukoopiate haldamiseks tuleb välja lülitada ebaturvaline PIN-kood. Haldamise vahekaardis, valige \"Ebaturvaline PIN kood\", et seda teha..", "Varukoopiate haldamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                    return;
+                }
+            }
+            if (Directory.Exists(flash_root + "/"))
+            {
+                this.Hide();
+                //varundamine/taaste
+                BackupManager br = new()
+                {
+                    Background = this.Background,
+                    Foreground = this.Foreground
+                };
+                if (WindowState == WindowState.FullScreen)
+                {
+                    br.WindowState = WindowState.FullScreen;
+                }
+                br.dest_drive = flash_root + "/";
+                br.parent = this;
+                br.Show();
+            }
+            else
+            {
+                _ = MessageBoxShow("Viga: Seadet pole ühendatud", "", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+            }
+        }
+
+
+        // verifile stuff
+        private string Verifile2()
+        {
+            Process p = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "java",
+                    Arguments = "-jar " + mas_root + "/verifile2.jar",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                }
+            };
+            p.Start();
+            while (!p.StandardOutput.EndOfStream)
+            {
+                string line = p.StandardOutput.ReadLine() ?? "";
+                return line.Split('\n')[0];
+            }
+            return "FAILED";
+        }
+
+
+        private bool Verifile()
+        {
+            return Verifile2() == "VERIFIED";
+        }
+
+
+        // Reimplementation of WinForms MessageBox.Show
+        private Task<MsBox.Avalonia.Enums.ButtonResult> MessageBoxShow(string message, string caption = "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum buttons = MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon icon = MsBox.Avalonia.Enums.Icon.None)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard(caption, message, buttons, icon);
+            var result = box.ShowWindowDialogAsync(this);
+            return result;
         }
     }
 }

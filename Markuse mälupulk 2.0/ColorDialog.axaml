@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+        x:Class="Markuse_mälupulk_2_0.ColorDialog"
+        Width="500" Height="500"
+        Title="Vali värv">
+  <Grid>
+    <ColorView Name="Color" Margin="0" IsAlphaVisible="False" IsAlphaEnabled="False" IsAccentColorsVisible="False" />
+    <Button HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="Confirm" Margin="10" Padding="30,7">OK</Button>
+  </Grid>
+</Window>
