@@ -1129,11 +1129,18 @@ namespace Markuse_mälupulk_2._0
             MsBox.Avalonia.Enums.ButtonResult result = await MessageBoxShow("See funktsioon võimaldab Markuse mälupulga väljaande teisendada. Kui te teisendate Premium -> Ultimate, siis lisanduvad järgnevad funktsioonid/kui teisendate Ultimate -> Premium kaovad järgmised funktsioonid:\n\nKaustad\nKiirrakendused\n\nKas olete kindel, et soovite jätkata?", "Väljaande teisendamine", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Warning);
             if (result == MsBox.Avalonia.Enums.ButtonResult.Yes)
             {
-                if (File.Exists(flash_root + "/E_INFO/convert.bat"))
+                if (File.Exists(flash_root + "/E_INFO/convert.bat") && OperatingSystem.IsWindows())
                 {
                     Process p = new();
                     p.StartInfo.FileName = flash_root + "/E_INFO/convert.bat";
                     p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.WorkingDirectory = flash_root + "/E_INFO";
+                    p.Start();
+                } else if (File.Exists(flash_root + "/E_INFO/convert.sh") && OperatingSystem.IsLinux()) {
+                    Process p = new();
+                    p.StartInfo.FileName = "konsole";
+                    p.StartInfo.Arguments = "-e sh " + flash_root + "/E_INFO/convert.sh";
+                    p.StartInfo.UseShellExecute = true;
                     p.StartInfo.WorkingDirectory = flash_root + "/E_INFO";
                     p.Start();
                 }
