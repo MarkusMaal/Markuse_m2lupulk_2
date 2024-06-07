@@ -290,7 +290,7 @@
                   </Style>
                 </WrapPanel.Styles>
                 <Button>RTF failist...</Button>
-                <Button>Loo ...</Button>
+                <Button Click="Create_Doc_Click">Loo ...</Button>
                 <Button>Arhiveeri uudis</Button>
                 <Button>Loe arhiveeritud uudised</Button>
               </WrapPanel>

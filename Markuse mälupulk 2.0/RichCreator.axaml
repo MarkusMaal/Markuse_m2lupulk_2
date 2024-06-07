@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:cc="using:AvRichTextBox"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="640" Height="480"
+        x:Class="Markuse_mälupulk_2_0.RichCreator"
+        Title="Uue tekstidokumendi loomine"
+        Icon="/Resources/mas_flash.png" WindowStartupLocation="CenterScreen">
+  <Grid Margin="20">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="60"/>
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <ScrollViewer Grid.Row="0" AllowAutoHide="True" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+      <StackPanel Orientation="Horizontal">
+        <Button FontWeight="Bold" Click="Style_Click">P</Button>
+        <Button FontStyle="Italic" Click="Style_Click">K</Button>
+        <Button Click="Style_Click">
+          <TextBlock TextDecorations="Underline">A</TextBlock>
+        </Button>
+        <Button Click="Style_Click" IsEnabled="False">
+          <TextBlock TextDecorations="Strikethrough">L</TextBlock>
+        </Button>
+        <Button Classes="Spacer" Click="Style_Click">H</Button>
+        <Button Click="Style_Click">&lt;--</Button>
+        <Button Click="Style_Click">-</Button>
+        <Button Click="Style_Click" Classes="Spacer">--&gt;</Button>
+        <Button Click="Style_Click" Foreground="Lime">Aa</Button>
+        <Button Click="Style_Click" Classes="Spacer" Background="Red">Aa</Button>
+        <Button Click="Style_Click">T+</Button>
+        <Button Click="Style_Click">T-</Button>
+        <Button Click="Style_Click" Classes="Spacer" IsEnabled="False">*</Button>
+        <Button Click="Exit_Click">OK</Button>
+      </StackPanel>
+    </ScrollViewer>
+    <cc:RichTextBox Grid.Row="1" Name="RichTextBox1" Background="White" Padding="0" Foreground="Black">
+    </cc:RichTextBox>
+  </Grid>
+  <Window.Styles>
+    <Style Selector="StackPanel > Button">
+      <Setter Property="Margin" Value="0,0,10,0" />
+    </Style>
+    <Style Selector="StackPanel > Button.Spacer">
+      <Setter Property="Margin" Value="0,0,20,0" />
+    </Style>
+  </Window.Styles>
+</Window>

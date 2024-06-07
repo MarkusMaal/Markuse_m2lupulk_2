@@ -1797,6 +1797,11 @@ namespace Markuse_mälupulk_2._0
         }
 
 
+        private void Create_Doc_Click(object? sender, RoutedEventArgs e)
+        {
+            RichCreator rc = new RichCreator();
+            rc.Show();
+        }
         // verifile stuff
         private string Verifile2()
         {
