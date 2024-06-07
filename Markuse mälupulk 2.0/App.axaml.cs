@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Markuse_mälupulk_2_0;
 using System;
 using System.IO;
 using System.Linq;
@@ -26,7 +27,12 @@ namespace Markuse_mälupulk_2._0
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                var args = desktop.Args;
+                if ((args?.Length > 0) && args.Contains("--safemode")) {
+                    desktop.MainWindow = new SafeMode();
+                } else {
+                    desktop.MainWindow = new MainWindow();
+                }
             }
 
             base.OnFrameworkInitializationCompleted();

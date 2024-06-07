@@ -2,9 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="440"
+        xmlns:cc="using:AvRichTextBox"
+        mc:Ignorable="d" Width="700" Height="480"
+        WindowStartupLocation="CenterScreen"
         x:Class="Markuse_mälupulk_2_0.SafeMode"
-        Title="SafeMode">
+        Title="Turvarežiim" Loaded="Window_Loaded" Icon="/Resources/mas_flash.png">
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="50"/>
@@ -12,31 +14,31 @@
     </Grid.RowDefinitions>
     <Panel Grid.Row="0" Margin="5">
       <StackPanel Orientation="Horizontal">
-        <Label Margin="10,0" VerticalAlignment="Center">Nimetu irdseade</Label>
-        <Button >Järgmine seade</Button>
+        <Label Margin="10,0" VerticalAlignment="Center" Name="DeviceName">Nimetu irdseade</Label>
+        <Button Name="NextDeviceButton" Click="NextDev_Click">Järgmine seade</Button>
       </StackPanel>
       <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-        <Button Margin="5,0">Värskenda andmeid</Button>
-        <Button Margin="5,0">Tavarežiim</Button>
+        <Button Margin="5,0" Click="ReloadButton_Click">Värskenda andmeid</Button>
+        <Button Margin="5,0" Click="NormalMode_Click">Tavarežiim</Button>
       </StackPanel>
     </Panel>
     <Grid Grid.Row="1" ColumnDefinitions="*, 4, *">
-      <Rectangle Grid.Column="0" Fill="Blue"/>
+      <cc:RichTextBox Name="NewsBox" Grid.Column="0" Background="White" Padding="0" Foreground="Black" TabIndex="0" DoubleTapped="NewsBox_DoubleTapped"></cc:RichTextBox>
       <GridSplitter Grid.Column="1" Background="Black" ResizeDirection="Columns"/>
-      <Panel Grid.Column="2">
+      <Panel Grid.Column="2" Name="SidePanel">
         <StackPanel>
           <Label FontSize="20">Navigatsioon</Label>
-          <Label>Artikkel 1/5</Label>
+          <Label Name="ArticleLabel">Artikkel 1/5</Label>
           <WrapPanel>
-            <Button Margin="0,0,10,10">&lt;&lt; Eelmine</Button>
-            <Button Margin="0,0,10,10">Järgmine &gt;&gt;</Button>
-            <Button Margin="0,0,10,10">Laadi uuesti</Button>
+            <Button Margin="0,0,10,10" Click="PreviousArticle_Click">&lt;&lt; Eelmine</Button>
+            <Button Margin="0,0,10,10" Click="NextArticle_Click">Järgmine &gt;&gt;</Button>
+            <Button Margin="0,0,10,10" Click="RefreshArticle_Click">Laadi uuesti</Button>
           </WrapPanel>
           <Label FontSize="20">Esiletõstetud videod</Label>
-          <ListBox MinHeight="40">
+          <ListBox MinHeight="40" Name="VideoBox" SelectionChanged="ListBox_SelectionChanged">
             
           </ListBox>
-          <Button Margin="0,10">Esita</Button>
+          <Button Margin="0,10" Name="PlayButton" IsEnabled="False" Click="PlayButton_Click">Esita</Button>
         </StackPanel>
         <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" TextWrapping="Wrap">
           Topeltklõpsake vasakut paneeli, et see peita

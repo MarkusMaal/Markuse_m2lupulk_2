@@ -1,16 +1,12 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
-using DocumentFormat.OpenXml.Wordprocessing;
+using Avalonia.Interactivity;
 using Markuse_mälupulk_2._0;
 using System;
 using System.Collections.ObjectModel;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace Markuse_mälupulk_2_0
 {
@@ -130,55 +126,57 @@ namespace Markuse_mälupulk_2_0
             }
         }
 
-        private void Window_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
             if (dataSource.Count == 1)
             {
                 DriveList.SelectedIndex = 0;
                 exit = false;
-                this.Close();
+                Close();
             } else
             {
-                this.IsVisible = true;
-                this.Width = 480;
-                this.Height = 280;
+                IsVisible = true;
+                Width = 480;
+                Height = 280;
             }
-            this.Position = new PixelPoint(parent.Position.X + ((int)parent.Width / 2) - ((int)this.Width / 2), parent.Position.Y + ((int)parent.Height / 2) - ((int)this.Height / 2));
+            if (!OperatingSystem.IsLinux() && (parent != null)) { // avoid this in Linux, because there's some weirdness with kwin causing the window to spawn at top left for some reason... (window still spawns correctly without it)
+                Position = new PixelPoint(parent.Position.X + ((int)parent.Width / 2) - ((int)Width / 2), parent.Position.Y + ((int)parent.Height / 2) - ((int)Height / 2));
+            }
             initialized = true;
 
         }
 
-        private void Window_PositionChanged(object? sender, Avalonia.Controls.PixelPointEventArgs e)
+        private void Window_PositionChanged(object? sender, PixelPointEventArgs e)
         {
-            if ( initialized)
+            if ( initialized && (parent != null))
             {
-                parent.Position = new PixelPoint(this.Position.X - (int)parent.Width / 2 + (int)this.Width / 2, this.Position.Y - (int)parent.Height / 2 + (int)this.Height / 2);
+                parent.Position = new PixelPoint(Position.X - (int)parent.Width / 2 + (int)Width / 2, Position.Y - (int)parent.Height / 2 + (int)Height / 2);
             }
         }
 
-        private void Window_SizeChanged(object? sender, Avalonia.Controls.SizeChangedEventArgs e)
+        private void Window_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
-            if (initialized)
+            if (initialized && (parent != null))
             {
-                parent.Position = new PixelPoint(this.Position.X - (int)parent.Width / 2 + (int)this.Width / 2, this.Position.Y - (int)parent.Height / 2 + (int)this.Height / 2);
+                parent.Position = new PixelPoint(Position.X - (int)parent.Width / 2 + (int)Width / 2, Position.Y - (int)parent.Height / 2 + (int)Height / 2);
             }
         }
 
-        private void Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Exit_Click(object? sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
 
-        private void OK_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void OK_Click(object? sender, RoutedEventArgs e)
         {
             if (DriveList.SelectedItems.Count > 0)
             {
                 exit = false;
-                this.Close();
+                Close();
             }
         }
 
-        private void DataGrid_SelectionChanged(object? sender, Avalonia.Controls.SelectionChangedEventArgs e)
+        private void DataGrid_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             ConfirmButton.IsEnabled = DriveList.SelectedItems.Count > 0;
         }

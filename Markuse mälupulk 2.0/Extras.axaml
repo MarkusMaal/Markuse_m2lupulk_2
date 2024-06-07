@@ -22,7 +22,7 @@
     <StackPanel Grid.Row="2" Grid.Column="0" Margin="15,0">
       <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Mälupulga pakkfail</Button>
       <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Turvarežiim</Button>
-      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Juhpaneeli pärandversioon</Button>
+      <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Mälupulga universaalprogramm</Button>
       <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" PointerEntered="Extra_Tip" PointerExited="Extra_Reset" Click="Button_Click">Teema kohandamine</Button>
     </StackPanel>
     <StackPanel Grid.Row="2" Grid.Column="1">

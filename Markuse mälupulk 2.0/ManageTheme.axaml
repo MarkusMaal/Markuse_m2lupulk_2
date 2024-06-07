@@ -11,8 +11,8 @@
       <WrapPanel HorizontalAlignment="Center">
         <Button Margin="5" Width="180" HorizontalContentAlignment="Center" Click="ChangeBgCol">Muuda tagaplaani värvi</Button>
         <Button Margin="5" Width="180" HorizontalContentAlignment="Center" Click="ChangeFgCol">Muuda esiplaani värvi</Button>
-        <Button Margin="5" Width="180" HorizontalContentAlignment="Center">Muuda taustapilti</Button>
-        <Button Margin="5" Width="180" HorizontalContentAlignment="Center">Laadi teema</Button>
+        <Button Margin="5" Width="180" HorizontalContentAlignment="Center" Click="LoadWallpaper">Muuda taustapilti</Button>
+        <Button Margin="5" Width="180" HorizontalContentAlignment="Center" Click="SyncScheme">Laadi teema</Button>
       </WrapPanel>
     </StackPanel>
     <CheckBox Name="GradientsCheck" Click="GradientCheck_Click" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="15">Kasuta üleminekuefekte</CheckBox>

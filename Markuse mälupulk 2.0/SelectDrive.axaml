@@ -4,10 +4,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" Width="480" Height="280"
         x:Class="Markuse_mälupulk_2_0.SelectDrive"
-        WindowStartupLocation="CenterOwner" ExtendClientAreaChromeHints="NoChrome" ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome" ExtendClientAreaToDecorationsHint="True"
         CanResize="False"
         Title="Valige markuse mälupulk süsteemid seade" ShowInTaskbar="False" Icon="/Resources/folder.png" Loaded="Window_Loaded"
         PositionChanged="Window_PositionChanged" SizeChanged="Window_SizeChanged" IsVisible="False"
+        WindowStartupLocation="Manual"
         >
   <Grid>
     <Grid.RowDefinitions>

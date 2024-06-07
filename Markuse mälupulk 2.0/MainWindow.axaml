@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
          xmlns:local="using:Markuse_mälupulk_2_0"
-        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="640"
+        mc:Ignorable="d" Width="900" Height="640"
         x:Class="Markuse_mälupulk_2._0.MainWindow"
         Title="Markuse mälupulk" Loaded="Window_Loaded" 
         x:DataType="local:MainWindowModel" Icon="/Resources/mas_flash.png"
         x:CompileBindings="True" KeyDown="Window_KeyDown"
+        WindowStartupLocation="CenterScreen"
         >
   <Grid RowDefinitions="2">
     <Grid.RowDefinitions>

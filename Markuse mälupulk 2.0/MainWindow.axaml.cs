@@ -31,9 +31,9 @@ namespace Markuse_mälupulk_2._0
 {
     public partial class MainWindow : Window
     {
-        readonly string mas_root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.mas";   // mas root directory
+        readonly internal string mas_root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.mas";   // mas root directory
         internal Color[] scheme = [Color.FromRgb(255, 255, 255), Color.FromRgb(0,0,0)];                          // default color scheme
-        string flash_root = "";                                                                         // flash drive root directory
+        internal string flash_root = "";                                                                         // flash drive root directory
         readonly bool testing = true;                                                                            // avoid loading content when we're in axaml view
         internal string VerifileStatus = "BYPASS";
         string current_pin = "";
@@ -153,7 +153,7 @@ namespace Markuse_mälupulk_2._0
                 {
                     parent = this,
                     Background = this.Background,
-                    Foreground = this.Foreground
+                    Foreground = this.Foreground,
                 };
                 await sd.ShowDialog(this).WaitAsync(cancellationToken: CancellationToken.None);
                 if (sd.exit)
@@ -574,7 +574,7 @@ namespace Markuse_mälupulk_2._0
 
         private static string Asgasggas(string sc){string s = sc;string a = s[..(s.Length / 2)];string b = s[(s.Length / 2)..];
         string c = "";for (int i = 0; i < b.Length; i++){c += (char)(b[i] - 1);if (i < a.Length){c += (char)(a[i] - 1);}}return c;}
-        private void LoadTheme()
+        internal void LoadTheme()
         {
             string? asoighiughw = VerifileStatus;
             byte[] data = [0xEF, 0xBB, 0xBF, 0x0B, 0x75, 0x6A, 0x68, 0x74, 0x73, 0x6E, 0x6D, 0x21, 0x21, 0x47, 0x4B, 0x58, 0x48, 0x23,
@@ -1822,9 +1822,9 @@ namespace Markuse_mälupulk_2._0
 
 
         // Reimplementation of WinForms MessageBox.Show
-        private Task<MsBox.Avalonia.Enums.ButtonResult> MessageBoxShow(string message, string caption = "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum buttons = MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon icon = MsBox.Avalonia.Enums.Icon.None)
+        internal Task<MsBox.Avalonia.Enums.ButtonResult> MessageBoxShow(string message, string caption = "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum buttons = MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon icon = MsBox.Avalonia.Enums.Icon.None, WindowStartupLocation spawn = WindowStartupLocation.CenterOwner)
         {
-            var box = MessageBoxManager.GetMessageBoxStandard(caption, message, buttons, icon);
+            var box = MessageBoxManager.GetMessageBoxStandard(caption, message, buttons, icon, spawn);
             var result = box.ShowWindowDialogAsync(this);
             return result;
         }
