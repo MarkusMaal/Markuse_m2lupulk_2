@@ -22,12 +22,16 @@ using RtfDomParser;
 using System.Security.Cryptography;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using DocumentFormat.OpenXml.Presentation;
+using Avalonia.Platform.Storage;
+using ScottPlot.Colormaps;
+using Splat;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Markuse_mälupulk_2._0
 {
     public partial class MainWindow : Window
     {
-        string mas_root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.mas";   // mas root directory
+        readonly string mas_root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.mas";   // mas root directory
         internal Color[] scheme = [Color.FromRgb(255, 255, 255), Color.FromRgb(0,0,0)];                          // default color scheme
         string flash_root = "";                                                                         // flash drive root directory
         readonly bool testing = true;                                                                            // avoid loading content when we're in axaml view
@@ -36,15 +40,30 @@ namespace Markuse_mälupulk_2._0
         readonly List<double> sts = [];
         readonly List<string> list = [];
         Thread[]? threads;
-        readonly DispatcherTimer CheckIfConnected = new();
+
         bool canContinue = true;
         bool isChild = false;
+        readonly bool simulation = false;
+
+        // timers
+        readonly DispatcherTimer CheckIfConnected = new();
+        readonly DispatcherTimer CheckFqa = new();
+        readonly DispatcherTimer CopyProgress = new();
+
+        // file browser stuff
+        bool copy = false;
+        bool fqa = false;
+        string clipboard = "";
+        string current_file = "";
+        string[] filenames;
+        string outfile = "";
+        int progress = 0;
+
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new MainWindowModel();
-            CheckIfConnected.Interval = new TimeSpan(0, 0, 5);
-            CheckIfConnected.Tick += CheckIfConnected_Tick;
+            TimerSetup();
             foreach (Process p in Process.GetProcesses())
             {
                 if (p.ProcessName.Contains("Markuse mälupulk")) 
@@ -56,7 +75,15 @@ namespace Markuse_mälupulk_2._0
         }
 
 
-
+        private void TimerSetup()
+        {
+            CheckIfConnected.Interval = new TimeSpan(0, 0, 5);
+            CheckFqa.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            CopyProgress.Interval = new TimeSpan(0,0,0,0,100);
+            CheckIfConnected.Tick += CheckIfConnected_Tick;
+            CheckFqa.Tick += CheckFqa_Tick;
+            CopyProgress.Tick += CopyProgress_Tick;
+        }
 
 
         private async void Window_Loaded(object? sender, RoutedEventArgs e)
@@ -139,6 +166,34 @@ namespace Markuse_mälupulk_2._0
             }
         }
 
+        private void CheckFqa_Tick(object? sender, EventArgs e)
+        {
+            if (fqa)
+            {
+                CollectProgress.IsIndeterminate = false;
+                CollectProgress.IsVisible = true;
+                CheckFqa.IsEnabled = false;
+                CheckIfConnected.IsEnabled = true;
+                FoldersTab.IsEnabled = true;
+                if (ConnectionStateLabel?.Content?.ToString()?.Equals("kasutaja loomine") ?? false)
+                {
+                    _ = MessageBoxShow("Kasutaja loodi edukalt", "Uue kasutaja lisamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+                    UsersBox.Items.Add(DataCollectTip.Content);
+                    //WriteLegacyUsers();
+                    AddUserButton.IsEnabled = true;
+                } else
+                {
+                    RefreshFileBrowser(sender, null);
+                }
+                if (ConnectionStateLabel == null)
+                {
+                    return;
+                }
+                ConnectionStateLabel.Content = "valmis";
+                DataCollectTip.Content = "Andmete kogumise ajal saate juba laaditud funktsioone kasutada";
+            }
+        }
+
         private async void CheckIfConnected_Tick(object? sender, EventArgs e)
         {
             if (ConnectionStateLabel.Content == null) { return; }
@@ -163,7 +218,13 @@ namespace Markuse_mälupulk_2._0
             }
             else
             {
-                ConnectionStateLabel.Content = "ühendatud";
+                if (clipboard == "")
+                {
+                    ConnectionStateLabel.Content = "ühendatud";
+                } else
+                {
+                    ConnectionStateLabel.Content = $"fail lõikelaual: {clipboard}";
+                }
                 this.Title = "Markuse mälupulk (" + flash_root + ")";
             }
             DevTab.IsVisible = LockManagement.IsVisible;
@@ -688,7 +749,7 @@ namespace Markuse_mälupulk_2._0
             }
         }
 
-        private void DataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        private void DataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs? e)
         {
             if (FileBrowser.SelectedItems.Count > 0)
             {
@@ -701,6 +762,11 @@ namespace Markuse_mälupulk_2._0
                 string currentDir = ctx.url;
                 NavigateDirectory(currentDir + "/" + selFolder);
             }
+        }
+
+        private void Open_Click(object? sender, RoutedEventArgs e)
+        {
+            DataGrid_DoubleTapped(sender, null);
         }
 
         private void NavigateDirectory(object? sender, RoutedEventArgs e)
@@ -1283,6 +1349,446 @@ namespace Markuse_mälupulk_2._0
             }
         }
 
+        private async void DevAddVideo_Click(object? sender, RoutedEventArgs e)
+        {
+
+            bool done = false;
+            while (!done)
+            {
+                var topLevel = GetTopLevel(this);
+                if (topLevel == null) { return; }
+                // Start async operation to open the dialog.
+                FilePickerFileType VideoType = new("Videfailid")
+                {
+                    Patterns = ["*.bk2", "*.mnv", "*.ogv", "*.mjpg", "*.zmv", "*.mgv", "*.wmv", "*.flv", "*.3gp", "*.webm", "*.mov", "*.avi", "*.mp4", "*.mpg"]
+                };
+
+                var file = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Vali video mälupulgalt",
+                    SuggestedStartLocation = StorageProvider.TryGetFolderFromPathAsync(flash_root).Result,
+                    FileTypeFilter = [VideoType, FilePickerFileTypes.All]
+                });
+
+                if ((file is null) || (file.Count < 1))
+                {
+                    return;
+                }
+                string fullName = Uri.UnescapeDataString(file[0].Path.AbsolutePath);
+                if (!fullName.StartsWith(flash_root.Replace("\\", "/")))
+                {
+                    MsBox.Avalonia.Enums.ButtonResult result = await MessageBoxShow("Videofail peab asuma mälupulgal", "Ei saa uut videot lisada", MsBox.Avalonia.Enums.ButtonEnum.OkAbort, MsBox.Avalonia.Enums.Icon.Error);
+                    if (result == MsBox.Avalonia.Enums.ButtonResult.Ok)
+                    {
+                        done = false;
+                    }
+                    else
+                    {
+                        done = true;
+                    }
+                    continue;
+                }
+                try
+                {
+                    // Start async operation to open the dialog.
+                    var dir = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                    {
+                        Title = $"Valige kaust kuhu teisaldada \"{VideoBoxDev.Items[2]}\"",
+                        SuggestedStartLocation = StorageProvider.TryGetFolderFromPathAsync(flash_root).Result,
+                    });
+
+                    if ((dir is not null) && (dir.Count > 0))
+                    {
+                        File.Move(fullName, flash_root + "/Markuse_videod/1. " + file[0].Name);
+                        File.Move($"{flash_root}/Markuse_videod/1. {VideoBoxDev.Items[0]}", $"{flash_root}/Markuse_videod/2. {VideoBoxDev.Items[0]}");
+                        File.Move($"{flash_root}/Markuse_videod/2. {VideoBoxDev.Items[1]}", $"{flash_root}/Markuse_videod/3. {VideoBoxDev.Items[1]}");
+                        File.Move($"{flash_root}/Markuse_videod/3. {VideoBoxDev.Items[2]}", $"{Uri.UnescapeDataString(dir[0].Path.AbsolutePath)}/{VideoBoxDev.Items[2]}");
+                        string? second = VideoBox.Items[0]?.ToString();
+                        string? third = VideoBox.Items[1]?.ToString();
+                        VideoBox.Items.Clear();
+                        VideoBox.Items.Add(file[0].Name);
+                        VideoBox.Items.Add(second);
+                        VideoBox.Items.Add(third);
+                        _ = MessageBoxShow("Uus video lisati edukalt. Kui soovite, et uued videod toimiksid vanemates programmides, klõpsake \"Rakenda muudatused\" nuppu.", "Uue video lisamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+                        done = true;
+                    } else
+                    {
+                        _ = MessageBoxShow("Ei saanud videot lisada. Põhjus: Te ei määranud kausta, kuhu kolmas video teisaldada.\r\n\r\nMuudatusi ei tehtud.", "Uue video lisamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                        done = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MsBox.Avalonia.Enums.ButtonResult erresult = await MessageBoxShow(ex.Message + "\r\n\r\nVajutage \"Katkesta\", et toiming katkestada\r\nVajutage \"OK\", et valida muu fail", "Ei saa uut videot lisada", MsBox.Avalonia.Enums.ButtonEnum.OkAbort, MsBox.Avalonia.Enums.Icon.Error);
+                    if (erresult == MsBox.Avalonia.Enums.ButtonResult.Ok)
+                    {
+                        done = false;
+                    }
+                    else
+                    {
+                        done = true;
+                    }
+                    continue;
+                }
+                done = true;
+                
+            }
+            return;
+        }
+
+        private async void DevEditVideo_Click(object? sender, RoutedEventArgs e)
+        {
+            bool done = false;
+            while (!done)
+            {
+                var topLevel = GetTopLevel(this);
+                if (topLevel == null) { return; }
+                // Start async operation to open the dialog.
+                FilePickerFileType VideoType = new("Videfailid")
+                {
+                    Patterns = ["*.bk2", "*.mnv", "*.ogv", "*.mjpg", "*.zmv", "*.mgv", "*.wmv", "*.flv", "*.3gp", "*.webm", "*.mov", "*.avi", "*.mp4", "*.mpg"]
+                };
+
+                var file = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Vali video mälupulgalt",
+                    SuggestedStartLocation = StorageProvider.TryGetFolderFromPathAsync(flash_root).Result,
+                    FileTypeFilter = [VideoType, FilePickerFileTypes.All]
+                });
+
+                if ((file is null) || (file.Count < 1))
+                {
+                    return;
+                }
+                string fullName = Uri.UnescapeDataString(file[0].Path.AbsolutePath);
+                if (!fullName.StartsWith(flash_root.Replace("\\", "/"))) // replace with forward slash to fix an issue in Windows
+                {
+                    MsBox.Avalonia.Enums.ButtonResult result = await MessageBoxShow("Videofail peab asuma mälupulgal", "Ei saa uut videot lisada", MsBox.Avalonia.Enums.ButtonEnum.OkAbort, MsBox.Avalonia.Enums.Icon.Error);
+                    if (result == MsBox.Avalonia.Enums.ButtonResult.Ok)
+                    {
+                        done = false;
+                    }
+                    else
+                    {
+                        done = true;
+                    }
+                    continue;
+                }
+                try
+                {
+                    // Start async operation to open the dialog.
+                    var dir = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                    {
+                        Title = $"Valige kaust kuhu teisaldada video \"{VideoBoxDev.SelectedItem}\"",
+                        SuggestedStartLocation = StorageProvider.TryGetFolderFromPathAsync(flash_root).Result,
+                    });
+
+                    if ((dir is not null) && (dir.Count > 0))
+                    {
+                        File.Move(fullName, flash_root + "/Markuse_videod/" + (VideoBoxDev.SelectedIndex + 1).ToString() + ". " + file[0].Name);
+                        File.Move($"{flash_root}/Markuse_videod/{VideoBoxDev.SelectedIndex + 1}. {VideoBoxDev.SelectedItem}", $"{Uri.UnescapeDataString(dir[0].Path.AbsolutePath)}/{VideoBoxDev.SelectedItem}");
+                        VideoBoxDev.Items[VideoBoxDev.SelectedIndex] = file[0].Name;
+                        _ = MessageBoxShow("Video asendati edukalt. Kui soovite, et vanemad mälupulga tarkvara versioonid muudatusi näeksid, vajutage nupule \"Rakenda muudatused\".", "Video asendamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                        done = true;
+                    }
+                    else
+                    {
+                        _ = MessageBoxShow("Ei saanud videot asendada. Põhjus: Te ei määranud kausta, kuhu eelmine video teisaldada.\r\n\r\nMuudatusi ei tehtud.", "Video asendamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                        done = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MsBox.Avalonia.Enums.ButtonResult erresult = await MessageBoxShow(ex.Message + "\r\n\r\nVajutage \"Katkesta\", et toiming katkestada\r\nVajutage \"OK\", et valida muu fail", "Ei saa uut videot asendada", MsBox.Avalonia.Enums.ButtonEnum.OkAbort, MsBox.Avalonia.Enums.Icon.Error);
+                    if (erresult == MsBox.Avalonia.Enums.ButtonResult.Ok)
+                    {
+                        done = false;
+                    }
+                    else
+                    {
+                        done = true;
+                    }
+                    continue;
+                }
+                done = true;
+            }
+        }
+
+        private void DevApplyVideo_Click(object? sender, RoutedEventArgs e)
+        {
+            //videofaili salvestamine
+            File.WriteAllText(flash_root + "/E_INFO/videod.txt", $"{VideoBoxDev.Items[0]};{VideoBoxDev.Items[1]};{VideoBoxDev.Items[2]}");
+
+            //annab kasutajale teada, et kõik õnnestus
+            _ = MessageBoxShow("Andmed salvestati edukalt. Muudatused on nüüd nähtavad vanemates versioonides", "Arendamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+        }
+
+        private void Window_KeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
+        {
+            if (e.Key == Avalonia.Input.Key.F12)
+            {
+                DevTab.IsVisible = !DevTab.IsVisible;
+            }
+        }
+
+        private void EraseClipboard(object? sender, RoutedEventArgs e)
+        {
+            clipboard = "";
+        }
+
+        private void RefreshFileBrowser(object? sender, RoutedEventArgs? e)
+        {
+            // navigate to the same directory, i.e. refresh
+            NavigateDirectory(GetWorkingDirectory());
+        }
+
+        private void CutCopyFile(object? sender, RoutedEventArgs e)
+        {
+            if (FileBrowser.SelectedItems.Count > 0)
+            {
+                string? selFolder = ((Folder?)FileBrowser.SelectedItems[0])?.Name;
+                string currentDir = GetWorkingDirectory();
+                // get header text of sender (the object that invoked this method) and set the copy variable accordingly
+                string? headerText = ((MenuItem?)sender)?.Header?.ToString();
+                copy = headerText == "Kopeeri";
+                clipboard = $"{currentDir}/{selFolder}";
+            }
+        }
+
+        private string GetWorkingDirectory()
+        {
+            // get current url from MainWindowModel
+            MainWindowModel? ctx = ((MainWindowModel?)DataContext);
+            if ((ctx == null))
+            {
+                return "";
+            }
+            return ctx.url;
+        }
+
+        private async void NewFolderClick(object? sender, RoutedEventArgs e)
+        {
+            InputBox ib = new();
+            ib.Text.Content = "Andke kaustale nimi";
+            await ib.ShowDialog(this).WaitAsync(CancellationToken.None);
+            if (ib.result)
+            {
+                Directory.CreateDirectory(GetWorkingDirectory() + "/" + ib.InputTxt.Text);
+            }
+            NavigateDirectory(GetWorkingDirectory());
+        }
+
+
+        void CopyFiles()
+        {
+            foreach (string file in filenames)
+            {
+                progress++;
+                current_file = file;
+                FileInfo fi = new FileInfo(current_file);
+                try
+                {
+                    string required_dir = fi.DirectoryName.Replace(clipboard, outfile);
+                    if (!simulation)
+                    {
+                        if (!Directory.Exists(required_dir))
+                        {
+                            Directory.CreateDirectory(required_dir);
+                        }
+                        if (copy)
+                        {
+                            File.Copy(file, required_dir + "/" + fi.Name, true);
+                        }
+                        else
+                        {
+                            File.Move(file, required_dir + "/" + fi.Name);
+                        }
+                    }
+                    else
+                    {
+                        Thread.Sleep(10);
+                    }
+                }
+                catch (Exception e) {
+                    if (!simulation)
+                    {
+                        throw e;
+                    }
+                }
+            }
+        }
+
+
+
+        void DelFile(string FileName)
+        {
+            if (!simulation)
+            {
+                File.Delete(FileName);
+            }
+            else
+            {
+                Thread.Sleep(5000);
+            }
+            fqa = true;
+        }
+
+        void DelTree(string FolderName)
+        {
+            if (!simulation)
+            {
+                try
+                {
+                    Directory.Delete(FolderName, true);
+                }
+                catch
+                {
+
+                }
+            }
+            else
+            {
+                Thread.Sleep(10000);
+            }
+            fqa = true;
+        }
+
+
+        private async void DeleteFileFolder(object? sender, RoutedEventArgs e)
+        {
+            if (await MessageBoxShow("See toiming kustutab valitud üksuse jäädavalt. Kas olete kindel, et soovite jätkata?", "Failisüsteemi üksuse kustutamine", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Warning)  == MsBox.Avalonia.Enums.ButtonResult.Yes)
+            {
+                if (FileBrowser.SelectedItems.Count > 0)
+                {
+                    string? selectedItem = FileBrowser.SelectedItems[0]?.ToString();
+                    FoldersTab.IsEnabled = false;
+                    fqa = false;
+                    CheckIfConnected.IsEnabled = false;
+                    CollectProgress.IsIndeterminate = true;
+                    CollectProgress.IsVisible = true;
+                    CheckFqa.IsEnabled = true;
+                    string s = GetWorkingDirectory() + "/" + selectedItem;
+                    if (File.Exists(s))
+                    {
+                        DataCollectTip.Content = $"faili kustutamine... (\"{selectedItem}\")";
+                        new Thread(() => DelFile(s)).Start();
+                    } else if (Directory.Exists(s))
+                    {
+                        DataCollectTip.Content = $"kausta kustutamine... (\"{selectedItem}\")";
+                        new Thread(() => DelTree(s)).Start();
+                    }
+                } else
+                {
+                    FoldersTab.IsEnabled = false;
+                    fqa = false;
+                    CheckIfConnected.IsEnabled = false;
+                    CollectProgress.IsIndeterminate = true;
+                    CollectProgress.IsVisible = true;
+                    ConnectionStateLabel.Content = $"kausta kustutamine... (\"{GetWorkingDirectory()}\")";
+                    CheckFqa.IsEnabled = true;
+                    new Thread(() => DelTree(GetWorkingDirectory())).Start();
+                }
+                if (!simulation)
+                {
+                    DataCollectTip.Content = "Ärge eemaldage mälupulka arvutist!";
+                } else
+                {
+                    DataCollectTip.Content = "// Simulatsioon //";
+                }
+                DataCollectTip.IsVisible = true;
+            }
+        }
+
+        private void PasteFileFolder(object? sender, RoutedEventArgs e)
+        {
+            if (Directory.Exists(clipboard))
+            {
+                filenames = Directory.GetFiles(clipboard, "*.*", SearchOption.AllDirectories);
+                // copied item is a folder
+                if (FileBrowser.SelectedItems.Count == 0)
+                {
+                    outfile = GetWorkingDirectory() ;
+                }
+                else
+                {
+                    if (Directory.Exists(GetWorkingDirectory() + "/" + FileBrowser.SelectedItems[0].ToString()))
+                    {
+                        outfile = GetWorkingDirectory() + "/" + FileBrowser.SelectedItems[0].ToString();
+                    }
+                    else
+                    {
+                        outfile = GetWorkingDirectory();
+                    }
+                }
+                Thread t = new Thread(new ThreadStart(CopyFiles));
+                t.Start();
+                CopyProgress.IsEnabled = true;
+                CheckIfConnected.IsEnabled = false;
+                CollectProgress.IsVisible = true;
+                CollectProgress.Maximum = filenames.Length;
+                CollectProgress.Value = 0;
+                FoldersTab.IsEnabled = false;
+                if (!simulation)
+                {
+                    DataCollectTip.Content = "Ärge eemaldage mälupulka arvutist!";
+                }
+                else
+                {
+                    DataCollectTip.Content = "// Simulatsioon //";
+                }
+                DataCollectTip.IsVisible = true;
+            } else if (File.Exists(clipboard))
+            {
+                // copied item is a file
+                if (copy)
+                {
+                    File.Copy(clipboard, GetWorkingDirectory() + "/" + new FileInfo(clipboard).Name);
+                }
+                else
+                {
+                    File.Move(clipboard, GetWorkingDirectory() + "/" + new FileInfo(clipboard).Name);
+                }
+                NavigateDirectory(GetWorkingDirectory());
+            }
+        }
+
+
+        private void CopyProgress_Tick(object sender, EventArgs e)
+        {
+            ReloadDataButton.IsEnabled = (progress < CollectProgress.Maximum);
+            if (progress < CollectProgress.Maximum)
+            {
+                CollectProgress.Value = progress;
+                string task = "";
+                if (copy)
+                {
+                    task = "kopeerimine";
+                }
+                else
+                {
+                    task = "teisaldamine";
+                }
+                ConnectionStateLabel.Content = $"Faili \"{new FileInfo(current_file).Name}\" {task}...";
+            }
+            else
+            {
+                CopyProgress.IsEnabled = false;
+                CollectProgress.Value = 0;
+                CollectProgress.IsVisible = false;
+                FoldersTab.IsEnabled = true;
+                clipboard = "";
+                ConnectionStateLabel.Content = "valmis";
+                filenames = null;
+                CheckIfConnected.IsEnabled = true;
+                if (!simulation)
+                {
+                    NavigateDirectory(GetWorkingDirectory());
+                }
+                DataCollectTip.Content = "Andmete kogumise ajal saate juba laaditud funktsioone kasutada";
+                DataCollectTip.IsVisible = false;
+            }
+        }
+
 
         // verifile stuff
         private string Verifile2()
@@ -1322,5 +1828,6 @@ namespace Markuse_mälupulk_2._0
             var result = box.ShowWindowDialogAsync(this);
             return result;
         }
+
     }
 }

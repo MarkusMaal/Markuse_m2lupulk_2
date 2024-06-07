@@ -9,7 +9,7 @@
         x:Class="Markuse_mälupulk_2._0.MainWindow"
         Title="Markuse mälupulk" Loaded="Window_Loaded" 
         x:DataType="local:MainWindowModel" Icon="/Resources/mas_flash.png"
-        x:CompileBindings="True"
+        x:CompileBindings="True" KeyDown="Window_KeyDown"
         >
   <Grid RowDefinitions="2">
     <Grid.RowDefinitions>
@@ -27,7 +27,7 @@
         <Panel.Background>
           <LinearGradientBrush EndPoint="50%,100%" StartPoint="50%,0%">
             <GradientStop Color="#0000"/>
-            <GradientStop Color="#ffff" Offset="1"/>
+            <GradientStop Color="#f000" Offset="1"/>
           </LinearGradientBrush>
         </Panel.Background>
         <StackPanel VerticalAlignment="Center">
@@ -73,7 +73,7 @@
           </Grid>
         </TabItem>
         <!-- Kaustad -->
-        <TabItem Header="Kaustad">
+        <TabItem Header="Kaustad" Name="FoldersTab">
           <Grid>
             <Grid.RowDefinitions>
               <RowDefinition Height="280" />
@@ -92,7 +92,7 @@
               </ListBox>
               <WrapPanel HorizontalAlignment="Right">
                 <Button Margin="10">-</Button>
-                <Button>+</Button>
+                <Button Name="AddUserButton">+</Button>
               </WrapPanel>
             </StackPanel>
             <Grid Grid.Row="0" Grid.Column="1" Margin="10">
@@ -104,7 +104,10 @@
                 <TextBlock Name="BrowserTopText" Classes="BigText" Margin="0,0,0,10">Failisirvija</TextBlock>
                 <Label Name="HelpLink" HorizontalAlignment="Right" PointerReleased="HelpLink_Click" />
               </Panel>
-              <DataGrid ItemsSource="{Binding Folders}" Name="FileBrowser" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" DoubleTapped="DataGrid_DoubleTapped">
+              <DataGrid ItemsSource="{Binding Folders}" Name="FileBrowser"
+                        Grid.Row="1" HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch" IsReadOnly="True"
+                        DoubleTapped="DataGrid_DoubleTapped" DragDrop.AllowDrop="True">
                 <DataGrid.Columns>
                   <DataGridTemplateColumn Header="Ikoon">
                     <DataGridTemplateColumn.CellTemplate>
@@ -116,6 +119,22 @@
                   <DataGridTextColumn Header="Nimi" Binding="{Binding Name}" />
                   <DataGridTextColumn Header="Tüüp" Binding="{Binding Type}" />
                 </DataGrid.Columns>
+                <DataGrid.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Click="Open_Click" HotKey="Enter" FontWeight="Bold" Header="Ava" />
+                    <Separator />
+                    <MenuItem Click="CutCopyFile" HotKey="Ctrl+X" Header="Lõika" />
+                    <MenuItem Click="CutCopyFile" HotKey="Ctrl+C" Header="Kopeeri" />
+                    <MenuItem Click="PasteFileFolder" HotKey="Ctrl+V" Header="Kleebi" />
+                    <MenuItem Click="DeleteFileFolder" HotKey="Delete" Header="Kustuta" />
+                    <MenuItem Click="EraseClipboard" Header="Tühjenda lõikelaud" />
+                    <Separator />
+                    <MenuItem Click="NewFolderClick" Header="Uus kaust" />
+                    <MenuItem Click="RefreshFileBrowser" HotKey="F5" Header="Laadi uuesti" />
+                    <Separator />
+                    <MenuItem Header="Attribuudid" />
+                  </ContextMenu>
+                </DataGrid.ContextMenu>
               </DataGrid>
             </Grid>
             <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Bottom">
@@ -226,7 +245,7 @@
               </WrapPanel.Styles>
               <Button Click="RenameFlash_Click">Muuda mälupulga nime</Button>
               <Button Click="ConvertEdition_Click">Teisenda väljaandeks Ultimate</Button>
-              <Button Click="ReloadData">Värskenda andmeid</Button>
+              <Button Name="ReloadDataButton" Click="ReloadData">Värskenda andmeid</Button>
               <Button Click="LegacyPin_Click">Ebaturvaline PIN kood</Button>
               <Button Click="BM_Click">Varundushaldur</Button>
               <Button Name="LockManagement" Click="LockFeatsClick" IsVisible="False">Lukusta haldusfunktsioonid</Button>
@@ -258,9 +277,9 @@
                     <Setter Property="Margin" Value="0,10,10,10"></Setter>
                   </Style>
                 </WrapPanel.Styles>
-                <Button>Lisa video</Button>
-                <Button>Asenda video</Button>
-                <Button>Rakenda muudatused</Button>
+                <Button Click="DevAddVideo_Click">Lisa video</Button>
+                <Button Click="DevEditVideo_Click">Asenda video</Button>
+                <Button Click="DevApplyVideo_Click">Rakenda muudatused</Button>
               </WrapPanel>
               <Label Classes="SemiBigText">Uudise lisamine</Label>
               <WrapPanel HorizontalAlignment="Left">
@@ -327,6 +346,7 @@
       <Setter Property="Cursor" Value="Hand"/>
     </Style>
   </Window.Styles>
+  
   <Design.DataContext>
     <local:MainWindowModel />
   </Design.DataContext>
