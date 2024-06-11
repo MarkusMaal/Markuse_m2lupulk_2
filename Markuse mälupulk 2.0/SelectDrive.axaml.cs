@@ -133,7 +133,12 @@ namespace Markuse_mälupulk_2_0
                 DriveList.SelectedIndex = 0;
                 exit = false;
                 Close();
-            } else
+            }
+            else if (dataSource.Count == 0) {
+                exit = false;
+                Close();
+            }
+            else
             {
                 IsVisible = true;
                 Width = 480;

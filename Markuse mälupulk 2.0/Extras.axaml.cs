@@ -157,26 +157,33 @@ namespace Markuse_mälupulk_2_0
             if (await parent.MessageBoxShow("Kas soovite sünkroonida juhtpaneeli andmed Markuse asjade pakkfailiga?", "Markuse asjade pakkfail", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Question) == MsBox.Avalonia.Enums.ButtonResult.Yes)
             {
                 string Password = new Random().Next(0, 21482572).ToString();
-                _ = parent.MessageBoxShow("Parool haldamiseks: " + Password + "\n\nPidage meeles, et selle parooliga mõjutate ainult seda, mis toimub pakkfailis ja mitte teistes mälupulga programmides.", "Markuse asjad pakkfail", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Setting);
+                await parent.MessageBoxShow("Parool haldamiseks: " + Password + "\n\nPidage meeles, et selle parooliga mõjutate ainult seda, mis toimub pakkfailis ja mitte teistes mälupulga programmides.", "Markuse asjad pakkfail", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Setting);
                 RichTextBox rtb = new();
                 List<string> pealkirjad = [];
                 List<string> uudised = [];
                 List<string> videod = [];
                 for (int i = 1; i <= 5; i++)
                 {
-                    rtb.LoadRtfDoc(parent.flash_root + "/E_INFO/uudis" + i.ToString() + ".rtf");
+                    //rtb.LoadRtfDoc(parent.flash_root + "/E_INFO/uudis" + i.ToString() + ".rtf");
+                    rtb.LoadWordDoc(parent.flash_root + "/E_INFO/uudis" + i.ToString() + ".docx");
                     string lines = rtb.FlowDoc.Text;
                     pealkirjad.Add(ToSuitableBatchString(lines.Split('\n')[0].Replace("\r", "")));
                     uudised.Add(ToSuitableBatchString(lines.Replace(lines.Split('\n')[0], "").Replace("\r\n", "").Replace("\n", "")));
                 }
-                try
+                foreach (FileInfo fi in new DirectoryInfo(parent.flash_root + "/Markuse_videod").GetFiles())
                 {
-                    foreach (FileInfo fi in new DirectoryInfo(parent.flash_root + "/Markuse_videod").GetFiles())
+                    try
                     {
                         string file = fi.Name;
+                        if (file == ".directory")
+                        {
+                            continue;
+                        }
                         videod.Add(ToSuitableBatchString(string.Concat(file.Split('.')[1].AsSpan(1), ".", file.Split('.')[2])));
+                    } catch {
+
                     }
-                } catch { }
+                }
                 string settings = "";
                 settings += "SET rightpass=" + Password + "\r\n";
                 int j = 0;
@@ -215,7 +222,7 @@ namespace Markuse_mälupulk_2_0
                 File.WriteAllBytes(parent.flash_root + "/E_INFO/Markuse asjad.bat", GetBatchfileBytes());
                 File.WriteAllText(parent.flash_root + "/E_INFO/markuse_asjade_seaded.cmd", settings, ppp.GetEncoding("windows-1252"));
                 File.SetAttributes(parent.flash_root + "/E_INFO/markuse_asjade_seaded.cmd", FileAttributes.Hidden);
-                _ = parent.MessageBoxShow("Andmed sünkroniseeriti. Vajutage OK, et pakkfail käivitada\r\n\r\nSalafunktsioonide klahvid (vajuta enne käivitusanimatsiooni):\r\n" +
+                await parent.MessageBoxShow("Andmed sünkroniseeriti. Vajutage OK, et pakkfail käivitada\r\n\r\nSalafunktsioonide klahvid (vajuta enne käivitusanimatsiooni):\r\n" +
                                 "M - arendaja režiim\r\n" +
                                 "a - vanema pakkfaili liidese režiim\r\n" +
                                 "r - pakkfaili seadete nullimine\r\n" +

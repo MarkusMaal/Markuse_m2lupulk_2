@@ -7,15 +7,25 @@ using Avalonia.Media.Immutable;
 using AvRichTextBox;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using DocumentFormat.OpenXml.Packaging;
+using System.Runtime.Serialization.Formatters;
+using System.IO;
+using TextAlignment = Avalonia.Media.TextAlignment;
+using Xceed.Words.NET;
+using Xceed.Document.NET;
+
 
 namespace Markuse_mälupulk_2_0;
 
 public partial class RichCreator : Window
 {
-    public RichCreator()
+    string? loadDoc;
+    public RichCreator(string? loadDoc = null)
     {
         InitializeComponent();
+        this.loadDoc = loadDoc;
     }
 
     private void Style_Click(object? sender, RoutedEventArgs e)
@@ -24,13 +34,13 @@ public partial class RichCreator : Window
         switch (button.Content)
         {
             case "P":
-                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontWeightProperty, FontWeight.Bold);
+                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontWeightProperty, Avalonia.Media.FontWeight.Bold);
                 break;
             case "K":
                 RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontStyleProperty, FontStyle.Italic);
                 break;
             case "H":
-                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontWeightProperty, FontWeight.Regular);
+                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontWeightProperty, Avalonia.Media.FontWeight.Regular);
                 RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontStyleProperty, FontStyle.Normal);
                 RichTextBox1.FlowDoc.Selection.ApplyFormatting(Inline.TextDecorationsProperty, TextDecorations.Baseline);
                 break;
@@ -99,29 +109,147 @@ public partial class RichCreator : Window
         RichTextBox1.FlowDoc.Selection.ApplyFormatting(BackgroundProperty, new SolidColorBrush(cd.Color.Color));
     }
 
-    Paragraph GetSelectionParagraph()
+    AvRichTextBox.Paragraph GetSelectionParagraph()
     {
-        Paragraph p = new();
+        AvRichTextBox.Paragraph p = new();
         string selectedText;
         try
         {
             selectedText = RichTextBox1.FlowDoc.Selection.Text;
         } catch
         {
-            return (Paragraph)RichTextBox1.FlowDoc.Blocks.First();
+            return (AvRichTextBox.Paragraph)RichTextBox1.FlowDoc.Blocks.First();
         }
         foreach (Block b in RichTextBox1.FlowDoc.Blocks)
         {
             if (b.Text.Contains(selectedText))
             {
-                return (Paragraph)b;
+                return (AvRichTextBox.Paragraph)b;
             }
         }
         return p;
     }
 
+    static string RtfToHtml(string rtf)
+    {
+        // register encoding provider to support Windows-1257 encoding
+        EncodingProvider ppp = CodePagesEncodingProvider.Instance;
+        Encoding.RegisterProvider(ppp);
+
+        // Simple RTF to HTML conversion
+        string html = RtfPipe.Rtf.ToHtml(rtf);
+
+        // Your RTF to HTML conversion logic here
+        // This is a placeholder for a more complex conversion
+
+        return html;
+    }
+
+    static void HtmlToDocx(string html, string docxPath)
+    {
+        // Create a new DocX document
+        using var document = DocX.Create(docxPath);
+        // Add HTML content to the document
+        var htmlParser = new AngleSharp.Html.Parser.HtmlParser();
+        var htmlDoc = htmlParser.ParseDocument(html);
+
+        foreach (var element in htmlDoc.Body.Children)
+        {
+            // Add HTML element content to the DOCX document
+            ParseHtmlElement(element, document);
+            document.InsertParagraph("\r\n");
+        }
+
+        // Save the document
+        document.Save();
+        document.Dispose();
+    }
+
+    static void ParseHtmlElement(AngleSharp.Dom.IElement element, DocX document)
+    {
+        // Handle different HTML elements and apply formatting
+        switch (element.TagName.ToLower())
+        {
+            case "p":
+                var paragraph = document.InsertParagraph();
+                AddFormattedText(paragraph, element);
+                paragraph.AppendLine(); // Ensure line separation for paragraphs
+                break;
+            case "br":
+                document.InsertParagraph(); // Add a new paragraph for <br> tags
+                break;
+            default:
+                var defaultParagraph = document.InsertParagraph();
+                AddFormattedText(defaultParagraph, element);
+                defaultParagraph.AppendLine(); // Ensure line separation for other elements
+                break;
+        }
+    }
+
+    static void AddFormattedText(Xceed.Document.NET.Paragraph paragraph, AngleSharp.Dom.IElement element, bool bold = false, bool italic = false, bool underline = false)
+    {
+        foreach (var child in element.ChildNodes)
+        {
+            if (child is AngleSharp.Dom.IText textNode)
+            {
+                var text = textNode.TextContent;
+                var formattedText = paragraph.Append(text);
+
+                if (bold)
+                    formattedText.Bold();
+                if (italic)
+                    formattedText.Italic();
+                if (underline)
+                    formattedText.UnderlineStyle(UnderlineStyle.singleLine);
+
+            }
+            else if (child is AngleSharp.Dom.IElement childElement)
+            {
+                switch (childElement.TagName.ToLower())
+                {
+                    case "b":
+                    case "strong":
+                        AddFormattedText(paragraph, childElement, true, italic, underline);
+                        break;
+                    case "i":
+                    case "em":
+                        AddFormattedText(paragraph, childElement, bold, true, underline);
+                        break;
+                    case "u":
+                        AddFormattedText(paragraph, childElement, bold, italic, true);
+                        break;
+                    default:
+                        AddFormattedText(paragraph, childElement, bold, italic, underline);
+                        break;
+                }
+            }
+        }
+    }
+
     private void Exit_Click(object? sender, RoutedEventArgs e)
     {
         this.Close();
+    }
+
+    private void Window_Loaded(object? sender, RoutedEventArgs e)
+    {
+        if (loadDoc != null)
+        {
+            if (!File.Exists(loadDoc.Replace("//", "/").Replace(".rtf", ".docx")))
+            {
+                string rtfPath = loadDoc.Replace("//", "/");
+                string docxPath = loadDoc.Replace("//", "/").Replace(".rtf", ".docx");
+                // Read RTF content
+                string rtfContent = File.ReadAllText(rtfPath);
+
+                // Convert RTF to HTML
+                string htmlContent = RtfToHtml(rtfContent);
+
+                // Convert HTML to DOCX
+                HtmlToDocx(htmlContent, docxPath);
+            }
+            RichTextBox1.LoadWordDoc(loadDoc.Replace("//", "/").Replace(".rtf", ".docx"));
+            RichTextBox1.FlowDoc.PagePadding = new Avalonia.Thickness(0);
+        }
     }
 }

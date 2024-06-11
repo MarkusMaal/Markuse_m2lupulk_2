@@ -265,7 +265,7 @@
           </Grid>
         </TabItem>
         <!-- Arendamine -->
-        <TabItem Name="DevTab" Header="Arendamine" IsVisible="False">
+        <TabItem Name="DevTab" Header="Arendamine" IsVisible="True">
           <Panel Name="DevPanel">
             <StackPanel>
               <TextBlock Classes="BigText">Arendamine</TextBlock>
@@ -301,14 +301,14 @@
                     <Setter Property="Margin" Value="0,10,10,10"></Setter>
                   </Style>
                 </WrapPanel.Styles>
-                <Button>Uudis 1</Button>
-                <Button>Uudis 2</Button>
-                <Button>Uudis 3</Button>
-                <Button>Uudis 4</Button>
-                <Button>Uudis 5</Button>
+                <Button Click="EditNews">Uudis 1</Button>
+                <Button Click="EditNews">Uudis 2</Button>
+                <Button Click="EditNews">Uudis 3</Button>
+                <Button Click="EditNews">Uudis 4</Button>
+                <Button Click="EditNews">Uudis 5</Button>
               </WrapPanel>
             </StackPanel>
-            <CheckBox HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10">Simulatsioonirežiim</CheckBox>
+            <CheckBox Name="SimulationCheck" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10">Simulatsioonirežiim</CheckBox>
             <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">Rakenda muudatused</Button>
           </Panel>
         </TabItem>

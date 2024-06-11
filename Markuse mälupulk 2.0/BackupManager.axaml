@@ -2,15 +2,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" Width="320" Height="240"
+        mc:Ignorable="d" Width="480" Height="320"
         x:Class="Markuse_mälupulk_2_0.BackupManager"
-        Title="Varundamine ja taaste" Closing="Window_Closing">
+        Title="Varundamine ja taaste" Closing="Window_Closing" Icon="/Resources/br.png"
+       Loaded="Window_Loaded">
   <StackPanel Margin="20" VerticalAlignment="Center">
     <Image Source="/Resources/br.png" Width="100"/>
     <Label HorizontalAlignment="Center" Margin="20" FontSize="20">Varundamine ja taaste</Label>
-    <WrapPanel HorizontalAlignment="Center">
-      <Button Margin="0,0,10,0">Varunda</Button>
-      <Button>Taasta</Button>
+    <StackPanel Margin="-10" Name="StatusPanel" IsVisible="False">
+      <Label HorizontalAlignment="Center" Name="StatusTopText">Varundamine. Palun oota...</Label>
+      <Label HorizontalAlignment="Center" Name="CurrentFile">Praegune fail: NUL</Label>
+      <ProgressBar Name="CopyProgress" Margin="20" Foreground="#8fff" IsIndeterminate="True"></ProgressBar>
+    </StackPanel>
+    <WrapPanel HorizontalAlignment="Center" Name="Buttons">
+      <Button Click="Backup_Click" Margin="0,0,10,0">Varunda</Button>
+      <Button Click="Restore_Click">Taasta</Button>
     </WrapPanel>
   </StackPanel>
 </Window>

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" Width="640" Height="480"
         x:Class="Markuse_mälupulk_2_0.RichCreator"
-        Title="Uue tekstidokumendi loomine"
+        Title="Uue tekstidokumendi loomine" Loaded="Window_Loaded"
         Icon="/Resources/mas_flash.png" WindowStartupLocation="CenterScreen">
   <Grid Margin="20">
     <Grid.RowDefinitions>
