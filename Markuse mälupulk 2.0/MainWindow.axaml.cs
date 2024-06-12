@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Avalonia.Platform.Storage;
+using AvRichTextBox;
 
 namespace Markuse_mälupulk_2._0
 {
@@ -26,7 +27,7 @@ namespace Markuse_mälupulk_2._0
         internal Color[] scheme = [Color.FromRgb(255, 255, 255), Color.FromRgb(0,0,0)];                          // default color scheme
         internal string flash_root = "";                                                                         // flash drive root directory
         readonly bool testing = true;                                                                            // avoid loading content when we're in axaml view
-        readonly bool devtest = true;
+        readonly bool devtest = false;
         internal string VerifileStatus = "BYPASS";
         string current_pin = "";
         readonly List<double> sts = [];
@@ -51,10 +52,13 @@ namespace Markuse_mälupulk_2._0
         string outfile = "";
         int progress = 0;
 
+        RichTextBox? rtb;
+
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new MainWindowModel();
+            rtb = new RichTextBox();
             TimerSetup();
             foreach (Process p in Process.GetProcesses())
             {
@@ -314,18 +318,27 @@ namespace Markuse_mälupulk_2._0
                         }
                         stats = RenameKey(stats, requiredField, requiredField + " (" + new SelectDrive().GetFriendlySize((long)stats[requiredField] * 1000, true) + ")");
                     }
-                    DriveInfo drv = new(flash_root);
-                    long usedSpace = drv.TotalSize - drv.TotalFreeSpace - ((long)sum * 1000L);
-                    stats.Add("Muud failid", SafeIntConversion(usedSpace));
-                    stats.Add("Vaba ruum", SafeIntConversion(drv.TotalFreeSpace));
-                    stats = RenameKey(stats, "Muud failid", "Muud failid (" + new SelectDrive().GetFriendlySize((long)stats["Muud failid"] * 1000, true) + ")");
-                    stats = RenameKey(stats, "Vaba ruum", "Vaba ruum (" + new SelectDrive().GetFriendlySize((long)stats["Vaba ruum"] * 1000, true) + ")");
-                    CreatePieChart(stats);
-                    canContinue = true;
-                    waitForExit.IsEnabled = false;
-                    if (waitTime > 30)
+                    try
                     {
-                        await MessageBoxShow("Statistika andmete kogumisel ilmnes tundmatu rike. Kogutud info võib olla ebatäpne.", "Hoiatus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                        DriveInfo drv = new(flash_root);
+                        long usedSpace = drv.TotalSize - drv.TotalFreeSpace - ((long)sum * 1000L);
+                        stats.Add("Muud failid", SafeIntConversion(usedSpace));
+                        stats.Add("Vaba ruum", SafeIntConversion(drv.TotalFreeSpace));
+                        stats = RenameKey(stats, "Muud failid", "Muud failid (" + new SelectDrive().GetFriendlySize((long)stats["Muud failid"] * 1000, true) + ")");
+                        stats = RenameKey(stats, "Vaba ruum", "Vaba ruum (" + new SelectDrive().GetFriendlySize((long)stats["Vaba ruum"] * 1000, true) + ")");
+                        CreatePieChart(stats);
+                        canContinue = true;
+                        waitForExit.IsEnabled = false;
+                        if (waitTime > 30)
+                        {
+                            await MessageBoxShow("Statistika andmete kogumisel ilmnes tundmatu rike. Kogutud info võib olla ebatäpne.", "Hoiatus", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+                        }
+                    } catch (Exception ex)
+                    {
+                        waitForExit.IsEnabled = false;
+                        await MessageBoxShow($"Ilmnes viga: {ex.Message}", "Viga", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                        waitForExit.IsEnabled = true;
+                        return;
                     }
                 }
                 else
@@ -529,6 +542,7 @@ namespace Markuse_mälupulk_2._0
             {
                 NewsBox.CloseDocument();
                 NewsBox.LoadWordDoc(flash_root + filename.Replace(".rtf", ".docx"));
+                //NewsBox.LoadRtfDoc(flash_root + filename);
                 NewsBox.FlowDoc.PagePadding = new Thickness(0);
             }
         }
@@ -1900,18 +1914,125 @@ namespace Markuse_mälupulk_2._0
             }
         }
 
-        private void RealEditNews(string idx)
+        private async void RealEditNews(string idx)
         {
             RichCreator rc = new($"{flash_root}/E_INFO/uudis{idx}.rtf".Replace("\\", "/"));
-            rc.Show();
+            await rc.ShowDialog(this).WaitAsync(CancellationToken.None);
+            rc.RichTextBox1.SaveAsWord($"{flash_root}/E_INFO/uudis{idx}.rtf");
+            rc.Close();
         }
 
 
-        private void Create_Doc_Click(object? sender, RoutedEventArgs e)
+        private async void Create_Doc_Click(object? sender, RoutedEventArgs e)
         {
             RichCreator rc = new();
-            rc.Show();
+            await rc.ShowDialog(this).WaitAsync(CancellationToken.None);
+            rtb = rc.RichTextBox1;
         }
+
+        private async void Import_Doc_Click(object? sender, RoutedEventArgs e)
+        {
+            var topLevel = GetTopLevel(this);
+            if (topLevel == null)
+            {
+                return;
+            }
+            // Start async operation to open the dialog.
+            FilePickerFileType DocType = new("Microsoft Word 2007+ dokument")
+            {
+                Patterns = ["*.docx", "*.dotx"]
+            };
+
+            var file = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Valige imporditav dokument",
+                FileTypeFilter = [DocType]
+            });
+
+            if (file is not null && file.Count > 0)
+            {
+                try
+                {
+                    rtb.LoadWordDoc(Uri.UnescapeDataString(file[0].Path.AbsolutePath));
+                    await MessageBoxShow("Fail laaditi edukalt mällu", "Uudisefaili laadimine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+                } catch (Exception ex)
+                {
+                    await MessageBoxShow($"Faili laadimine ebaõnnestus\nViga: {ex.Message}", "Uudisefaili laadimine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                }
+            } else
+            {
+                await MessageBoxShow("Faili ei laaditud, kuna kasutaja katkestas toimingu", "Uudisefaili laadimine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Setting);
+            }
+        }
+
+        private async void Archive_Doc_Click(object? sender, RoutedEventArgs e)
+        {
+            if (await MessageBoxShow("See funktsioon võimaldab lisada viimase uudise arhiveeritud uudiste kausta. Kas soovite jätkata?", "Uudise arhiveerimine", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Question) == MsBox.Avalonia.Enums.ButtonResult.Yes)
+            {
+                bool no_archives = true;
+                string[] types = ["rtf", "docx"];
+                foreach (string type in types)
+                {
+                    if (File.Exists($"{flash_root}/E_INFO/uudis6.{type}"))
+                    {
+                        File.Move($"{flash_root}/E_INFO/uudis6.{type}", $"{flash_root}/E_INFO/arhiiv/uudis{DateTime.Now.DayOfYear}{DateTime.Now.Hour}{DateTime.Now.Minute}{DateTime.Now.Second}.{type}");
+                        no_archives = false;
+                    }
+                }
+                if (no_archives)
+                {
+                    await MessageBoxShow("Ei leitud uudised, mida oleks vaja arhiveerida.", "Uudise arhiveerimine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                }
+            }
+        }
+
+        private void News_Archive_Click(object? sender, RoutedEventArgs e)
+        {
+            new Process()
+            {
+                StartInfo = new()
+                {
+                    UseShellExecute = true,
+                    FileName = $"{flash_root}/E_INFO/arhiiv"
+                }
+            }.Start();
+        }
+
+        private async void Apply_Doc_Changes(object? sender, RoutedEventArgs e)
+        {
+            if (File.Exists($"{flash_root}/E_INFO/uudis6.docx"))
+            {
+                if (await MessageBoxShow("Enne uudise lisamist tuleb üks uudis arhiveerida. Kas soovite seda kohe teha?", "Uudise lisamine", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Warning) == MsBox.Avalonia.Enums.ButtonResult.Yes)
+                {
+                    string s = flash_root + "/E_INFO/arhiiv/uudis" + DateTime.Now.DayOfYear + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second + ".docx";
+                    File.Move($"{flash_root}/E_INFO/uudis6.docx", s);
+                } else
+                {
+                    await MessageBoxShow("Ei saanud uudist lisada.", "Uudise lisamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+                    return;
+                }
+            }
+            File.Move(flash_root + "/E_INFO/uudis5.docx", flash_root + "/E_INFO/uudis6.docx");
+            File.Move(flash_root + "/E_INFO/uudis4.docx", flash_root + "/E_INFO/uudis5.docx");
+            File.Move(flash_root + "/E_INFO/uudis3.docx", flash_root + "/E_INFO/uudis4.docx");
+            File.Move(flash_root + "/E_INFO/uudis2.docx", flash_root + "/E_INFO/uudis3.docx");
+            File.Move(flash_root + "/E_INFO/uudis1.docx", flash_root + "/E_INFO/uudis2.docx");
+
+            //salvestab uue uudise
+            //teisendab teksti baitideks, et vältida probleeme kasutuseloleva failiga
+            string path = flash_root + "/E_INFO/uudis9.docx";
+            rtb?.SaveAsWord(path);
+            rtb = null;
+            File.Move(flash_root + "/E_INFO/uudis9.docx", flash_root+ "/E_INFO/uudis1.docx");
+
+            //eemaldab ebavajaliku uudise mälust
+            rtb = new RichTextBox();
+
+            //annab kasutajale teada, et kõik õnnestus
+            await MessageBoxShow("Andmed salvestati edukalt. Programm värskendab nüüd andmeid...", "Arendamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
+            ReloadData(sender, e);
+        }
+
         // verifile stuff
         private string Verifile2()
         {

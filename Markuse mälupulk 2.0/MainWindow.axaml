@@ -43,7 +43,7 @@
     <Panel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,-2">
       <TabControl FontSize="12" SelectionChanged="TabControl_SelectionChanged">
         <!--Avaleht-->
-        <TabItem Header="Avaleht">
+        <TabItem Header="Uudised">
           <Grid ColumnDefinitions="*, 2, *" Name="NewsGrid">
             <Panel Grid.Column="0" Background="Black">
               <cc:RichTextBox Name="NewsBox" Background="White" Padding="0" Foreground="Black" DoubleTapped="RichTextBox_DoubleTapped"></cc:RichTextBox>
@@ -265,7 +265,7 @@
           </Grid>
         </TabItem>
         <!-- Arendamine -->
-        <TabItem Name="DevTab" Header="Arendamine" IsVisible="True">
+        <TabItem Name="DevTab" Header="Arendamine" IsVisible="False">
           <Panel Name="DevPanel">
             <StackPanel>
               <TextBlock Classes="BigText">Arendamine</TextBlock>
@@ -289,10 +289,10 @@
                     <Setter Property="Margin" Value="0,10,10,10"></Setter>
                   </Style>
                 </WrapPanel.Styles>
-                <Button>RTF failist...</Button>
+                <Button Click="Import_Doc_Click">DOCX failist...</Button>
                 <Button Click="Create_Doc_Click">Loo ...</Button>
-                <Button>Arhiveeri uudis</Button>
-                <Button>Loe arhiveeritud uudised</Button>
+                <Button Click="Archive_Doc_Click">Arhiveeri uudis</Button>
+                <Button Click="News_Archive_Click">Loe arhiveeritud uudised</Button>
               </WrapPanel>
               <Label Classes="SemiBigText">Uudise muutmine</Label>
               <WrapPanel HorizontalAlignment="Left">
@@ -309,7 +309,7 @@
               </WrapPanel>
             </StackPanel>
             <CheckBox Name="SimulationCheck" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10">Simulatsioonirežiim</CheckBox>
-            <Button HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">Rakenda muudatused</Button>
+            <Button Click="Apply_Doc_Changes" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">Rakenda muudatused</Button>
           </Panel>
         </TabItem>
       </TabControl>
