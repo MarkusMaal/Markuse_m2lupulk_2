@@ -25,7 +25,11 @@ namespace Markuse_mälupulk_2_0
             InitializeComponent();
 
             dataSource = new ObservableCollection<string[]>();
-            foreach(Process p in Process.GetProcesses())
+            if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+            {
+                testing = false;
+            }
+            foreach (Process p in Process.GetProcesses())
             {
                 if (p.ProcessName.Contains("Markuse mälupulk"))
                 {

@@ -15,7 +15,6 @@ using System.Text;
 using MsBox.Avalonia;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Avalonia.Platform.Storage;
 using AvRichTextBox;
 
@@ -60,6 +59,10 @@ namespace Markuse_mälupulk_2._0
             DataContext = new MainWindowModel();
             rtb = new RichTextBox();
             TimerSetup();
+            if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+            {
+                testing = false;
+            }
             foreach (Process p in Process.GetProcesses())
             {
                 if (p.ProcessName.Contains("Markuse mälupulk")) 
@@ -98,13 +101,10 @@ namespace Markuse_mälupulk_2._0
                     {
                         case "VERIFIED":
                             break;
+                        case "FAILED":
                         case "FOREIGN":
                             await MessageBoxShow("Käivitasite programmi seadmes, mis ei vasta Markuse asjad süsteemi standarditele. Pange tähele, et teatud funktsionaalsus ei ole seetõttu saadaval.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
-                            return;
-                        case "FAILED":
-                            await MessageBoxShow("Verifile püsivuskontrolli läbimine nurjus. Programm ei tööta seadmetes, mis on valesti juurutatud.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-                            this.Close();
-                            return;
+                            break;
                         case "TAMPERED":
                             await MessageBoxShow("See arvuti pole õigesti juurutatud. Seda võis põhjustada hiljutine riistvaramuudatus. Palun kasutage juurutamiseks Markuse asjade juurutamistööriista. Programm ei tööta seadmetes, mis on valesti juurutatud.\nKood: VF_" + VerifileStatus, "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
                             this.Close();
@@ -114,10 +114,7 @@ namespace Markuse_mälupulk_2._0
                             this.Close();
                             return;
                     }
-                    if (Verifile())
-                    {
-                        LoadTheme();
-                    }
+                    LoadTheme();
                 }
                 else
                 {
@@ -629,34 +626,16 @@ namespace Markuse_mälupulk_2._0
             SpaceUsage.Plot.Layout.Frameless();
         }
 
-        private static string Asgasggas(string sc){string s = sc;string a = s[..(s.Length / 2)];string b = s[(s.Length / 2)..];
-        string c = "";for (int i = 0; i < b.Length; i++){c += (char)(b[i] - 1);if (i < a.Length){c += (char)(a[i] - 1);}}return c;}
         internal void LoadTheme()
         {
-            string? asoighiughw = VerifileStatus;
-            byte[] data = [0xEF, 0xBB, 0xBF, 0x0B, 0x75, 0x6A, 0x68, 0x74, 0x73, 0x6E, 0x6D, 0x21, 0x21, 0x47, 0x4B, 0x58, 0x48, 0x23,
-                           0x0E, 0x74, 0x73, 0x6F, 0x21, 0x21, 0x21, 0x64, 0x62, 0x63, 0x66, 0x54, 0x63, 0x75, 0x6A, 0x68, 0x31, 0x21,
-                           0x6A, 0x75, 0x29, 0x64, 0x62, 0x63, 0x66, 0x4D, 0x6F, 0x75, 0x21, 0x21, 0x2A, 0x3C, 0x0B, 0x75, 0x6A, 0x68,
-                           0x63, 0x3E, 0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x76, 0x74, 0x73, 0x6F, 0x29, 0x6A, 0x75, 0x29, 0x64, 0x62, 0x63,
-                           0x66, 0x4D, 0x6F, 0x75, 0x21, 0x21, 0x2A, 0x3C, 0x0B, 0x75, 0x6A, 0x68, 0x64, 0x3E, 0x23, 0x3C, 0x0B, 0x70,
-                           0x21, 0x6A, 0x75, 0x6A, 0x3E, 0x31, 0x21, 0x21, 0x21, 0x2F, 0x66, 0x68, 0x69, 0x21, 0x2C, 0x2A, 0x0B, 0x0E,
-                           0x64, 0x2C, 0x21, 0x64, 0x62, 0x2A, 0x63, 0x6A, 0x21, 0x21, 0x2A, 0x0E, 0x6A, 0x21, 0x6A, 0x3D, 0x62, 0x4D,
-                           0x6F, 0x75, 0x2A, 0x0B, 0x0E, 0x64, 0x2C, 0x21, 0x64, 0x62, 0x2A, 0x62, 0x6A, 0x21, 0x21, 0x2A, 0x0E, 0x7E,
-                           0x0B, 0x73, 0x75, 0x73, 0x21, 0x3C, 0x0E, 0x74, 0x73, 0x6F, 0x21, 0x64, 0x62, 0x63, 0x66, 0x3E, 0x23, 0x4B,
-                           0x46, 0x54, 0x47, 0x3C, 0x0B, 0x75, 0x6A, 0x68, 0x62, 0x3E, 0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x76, 0x74, 0x73,
-                           0x6F, 0x29, 0x2D, 0x29, 0x6F, 0x2A, 0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x66, 0x68, 0x69, 0x30, 0x33, 0x2A, 0x0E,
-                           0x74, 0x73, 0x6F, 0x21, 0x21, 0x21, 0x64, 0x62, 0x63, 0x66, 0x54, 0x63, 0x75, 0x6A, 0x68, 0x29, 0x6F, 0x2A,
-                           0x74, 0x73, 0x6E, 0x6D, 0x2F, 0x66, 0x68, 0x69, 0x30, 0x33, 0x2A, 0x0E, 0x74, 0x73, 0x6F, 0x21, 0x21, 0x21,
-                           0x23, 0x0E, 0x67, 0x73, 0x29, 0x6F, 0x21, 0x21, 0x21, 0x3C, 0x6A, 0x3D, 0x63, 0x4D, 0x6F, 0x75, 0x3C, 0x6A,
-                           0x2C, 0x0E, 0x7C, 0x0B, 0x21, 0x3E, 0x29, 0x69, 0x73, 0x29, 0x5C, 0x5E, 0x2E, 0x32, 0x3C, 0x0B, 0x67, 0x29,
-                           0x21, 0x21, 0x2F, 0x66, 0x68, 0x69, 0x0E, 0x7C, 0x0B, 0x21, 0x3E, 0x29, 0x69, 0x73, 0x29, 0x5C, 0x5E, 0x2E,
-                           0x32, 0x3C, 0x0B, 0x0E, 0x7E, 0x66, 0x76, 0x6F, 0x64];
-            string aighoauisg = Encoding.UTF8.GetString(data); string? wihgouiwww = CSharpScript.
-                EvaluateAsync(string.Concat(Asgasggas(aighoauisg).AsSpan(4), ";")).Result.ToString();
+            if (VerifileStatus != "VERIFIED")
+            {
+                return;
+            }
 
             if (File.Exists(mas_root + "/bg_common.png"))
             {
-                if (asoighiughw != wihgouiwww) { return; }
+                if (VerifileStatus != "VERIFIED") { return; }
                 ImageBrush ib = new()
                 {
                     Source = new Bitmap(mas_root + "/bg_common.png"),
@@ -664,7 +643,7 @@ namespace Markuse_mälupulk_2._0
                 };
                 TopPanel.Background = ib;
             }
-            if (asoighiughw != wihgouiwww) { return; }
+            if (VerifileStatus != "VERIFIED") { return; }
             if (File.Exists(mas_root + "/scheme.cfg"))
             {
                 string[] schemeData = File.ReadAllText(mas_root + "/scheme.cfg").Split(';');
