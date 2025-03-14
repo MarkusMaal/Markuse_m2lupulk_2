@@ -52,13 +52,11 @@ namespace Markuse_mälupulk_2._0
         string outfile = "";
         int progress = 0;
 
-        RichTextBox? rtb;
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new MainWindowModel();
-            rtb = new RichTextBox();
             TimerSetup();
             if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
             {
@@ -386,7 +384,7 @@ namespace Markuse_mälupulk_2._0
                                 }
                                 break;
                             case 5:
-                                LoadDoc("/E_INFO/uudis1.rtf");
+                                LoadDoc("/E_INFO/uudis2.rtf");
                                 break;
                             case 20:
                                 UsersBox.Items.Clear();
@@ -536,11 +534,10 @@ namespace Markuse_mälupulk_2._0
 
         public void LoadDoc(string filename)
         {
-            if (File.Exists(flash_root + filename.Replace(".rtf", ".docx")))
+            if (File.Exists(flash_root + filename))
             {
-                NewsBox.CloseDocument();
-                NewsBox.LoadWordDoc(flash_root + filename.Replace(".rtf", ".docx"));
-                //NewsBox.LoadRtfDoc(flash_root + filename);
+                //NewsBox.CloseDocument();
+                NewsBox.LoadRtfDoc(flash_root + filename);
                 NewsBox.FlowDoc.PagePadding = new Thickness(0);
             }
         }
@@ -1898,7 +1895,7 @@ namespace Markuse_mälupulk_2._0
         {
             RichCreator rc = new($"{flash_root}/E_INFO/uudis{idx}.rtf".Replace("\\", "/"));
             await rc.ShowDialog(this).WaitAsync(CancellationToken.None);
-            rc.RichTextBox1.SaveAsWord($"{flash_root}/E_INFO/uudis{idx}.rtf");
+            rc.RichTextBox1.SaveRtfDoc($"{flash_root}/E_INFO/uudis{idx}.rtf");
             rc.Close();
         }
 
@@ -1907,7 +1904,7 @@ namespace Markuse_mälupulk_2._0
         {
             RichCreator rc = new();
             await rc.ShowDialog(this).WaitAsync(CancellationToken.None);
-            rtb = rc.RichTextBox1;
+            //rtb = rc.RichTextBox1;
         }
 
         private async void Import_Doc_Click(object? sender, RoutedEventArgs e)
@@ -1933,7 +1930,7 @@ namespace Markuse_mälupulk_2._0
             {
                 try
                 {
-                    rtb.LoadWordDoc(Uri.UnescapeDataString(file[0].Path.AbsolutePath));
+                    //rtb.LoadWordDoc(Uri.UnescapeDataString(file[0].Path.AbsolutePath));
                     await MessageBoxShow("Fail laaditi edukalt mällu", "Uudisefaili laadimine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
                 } catch (Exception ex)
                 {
@@ -2001,12 +1998,12 @@ namespace Markuse_mälupulk_2._0
             //salvestab uue uudise
             //teisendab teksti baitideks, et vältida probleeme kasutuseloleva failiga
             string path = flash_root + "/E_INFO/uudis9.docx";
-            rtb?.SaveAsWord(path);
-            rtb = null;
+            //rtb?.SaveAsWord(path);
+            //rtb = null;
             File.Move(flash_root + "/E_INFO/uudis9.docx", flash_root+ "/E_INFO/uudis1.docx");
 
             //eemaldab ebavajaliku uudise mälust
-            rtb = new RichTextBox();
+            //rtb = new RichTextBox();
 
             //annab kasutajale teada, et kõik õnnestus
             await MessageBoxShow("Andmed salvestati edukalt. Programm värskendab nüüd andmeid...", "Arendamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
