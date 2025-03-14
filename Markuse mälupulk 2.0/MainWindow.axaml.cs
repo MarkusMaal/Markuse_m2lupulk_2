@@ -2015,25 +2015,32 @@ namespace Markuse_mälupulk_2._0
         // verifile stuff
         private string Verifile2()
         {
-            Process p = new Process
+            if (File.Exists(mas_root + "/verifile2.jar"))
             {
-                StartInfo = new ProcessStartInfo
+                Process p = new Process
                 {
-                    FileName = "java",
-                    Arguments = "-jar " + mas_root + "/verifile2.jar",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "java",
+                        Arguments = "-jar " + mas_root + "/verifile2.jar",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                    }
+                };
+                p.Start();
+                while (!p.StandardOutput.EndOfStream)
+                {
+                    string line = p.StandardOutput.ReadLine() ?? "";
+                    return line.Split('\n')[0];
                 }
-            };
-            p.Start();
-            while (!p.StandardOutput.EndOfStream)
-            {
-                string line = p.StandardOutput.ReadLine() ?? "";
-                return line.Split('\n')[0];
+                return "FAILED";
             }
-            return "FAILED";
+            else
+            {
+                return "FOREIGN";
+            }
         }
 
 
