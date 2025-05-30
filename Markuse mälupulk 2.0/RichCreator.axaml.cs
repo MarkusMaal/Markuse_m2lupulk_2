@@ -248,7 +248,7 @@ public partial class RichCreator : Window
                 // Convert HTML to DOCX
                 HtmlToDocx(htmlContent, docxPath);
             }
-            RichTextBox1.LoadWordDoc(loadDoc.Replace("//", "/"));
+            RichTextBox1.LoadRtfDoc(loadDoc.Replace("//", "/"));
             RichTextBox1.FlowDocument.PagePadding = new Avalonia.Thickness(0);
         }
     }

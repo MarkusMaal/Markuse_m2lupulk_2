@@ -1,5 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:cc="using:AvRichTextBox"
+        xmlns:avrtb="using:AvRichTextBox"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -43,10 +43,10 @@
     <Panel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,-2">
       <TabControl FontSize="12" SelectionChanged="TabControl_SelectionChanged">
         <!--Avaleht-->
-        <TabItem Header="Uudised">
+        <TabItem Header="Uudised" PointerReleased="Reload_Click">
           <Grid ColumnDefinitions="*, 2, *" Name="NewsGrid">
-            <Panel Grid.Column="0" Background="Black">
-              <cc:RichTextBox Name="NewsBox" Background="White" Padding="0" Foreground="Black" DoubleTapped="RichTextBox_DoubleTapped"></cc:RichTextBox>
+            <Panel Background="Black">
+              <avrtb:RichTextBox  Name="NewsBox" Background="White" Padding="0" Foreground="Black" DoubleTapped="RichTextBox_DoubleTapped"></avrtb:RichTextBox>
             </Panel>
             <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns" Cursor="TopSide" Name="NewsSplit"></GridSplitter>
             <Panel Grid.Column="2" Name="NewsSidePanel">
@@ -329,9 +329,8 @@
       <Setter Property="FontSize" Value="14"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
-    <Style Selector="TabItem > AccessText">
-      <Setter Property="FontSize" Value="14"/>
-      <Setter Property="VerticalAlignment" Value="Center"/>
+    <Style Selector="TabControl > TabItem">
+      <Setter Property="FontSize" Value="15" />
     </Style>
     <Style Selector="TabControl WrapPanel">
       <Setter Property="HorizontalAlignment" Value="Center"/>

@@ -125,7 +125,7 @@ namespace Markuse_mälupulk_2_0
             if (File.Exists(currentDevice.RootDirectory + "/E_INFO/" + filename))
             {
                 NewsBox.CloseDocument();
-                NewsBox.LoadWordDoc(currentDevice.RootDirectory + "/E_INFO/" + filename);
+                NewsBox.LoadRtfDoc(currentDevice.RootDirectory + "/E_INFO/" + filename);
                 NewsBox.FlowDocument.PagePadding = new Thickness(0);
             }
         }

@@ -1,3 +1,6 @@
 [submodule "MasCommon"]
 	path = MasCommon
 	url = git@github.com:MarkusMaal/MasCommon.git
+[submodule "RtfDomParserAvalonia"]
+	path = RtfDomParserAvalonia
+	url = https://github.com/cuikp/RtfDomParserAvalonia.git

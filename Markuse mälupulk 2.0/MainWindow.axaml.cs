@@ -37,12 +37,12 @@ namespace Markuse_mälupulk_2._0
         string current_pin = "";
         readonly List<double> sts = [];
         readonly List<string> list = [];
-        private Verifile vf = new Verifile();
         Thread[]? threads;
 
         bool canContinue = true;
         bool isChild = false;
         readonly bool simulation = false;
+        private RichTextBox rtb;
 
         // timers
         readonly DispatcherTimer CheckIfConnected = new();
@@ -57,8 +57,9 @@ namespace Markuse_mälupulk_2._0
         string[] filenames;
         string outfile = "";
         int progress = 0;
+        
+        private Verifile vf = new();
 
-        RichTextBox? rtb;
 
         public MainWindow()
         {
@@ -542,11 +543,16 @@ namespace Markuse_mälupulk_2._0
 
         public void LoadDoc(string filename)
         {
-            if (File.Exists(flash_root + filename))
+            /*if (File.Exists(flash_root + filename.Replace(".rtf", ".docx")))
             {
                 NewsBox.CloseDocument();
                 NewsBox.LoadWordDoc(flash_root + filename.Replace(".rtf", ".docx"));
-                //NewsBox.LoadRtfDoc(flash_root + filename);
+                NewsBox.FlowDocument.PagePadding = new Thickness(0);
+            }
+            else */ if (File.Exists(flash_root + filename))
+            {
+                NewsBox.CloseDocument();
+                NewsBox.LoadRtfDoc(flash_root + filename);
                 NewsBox.FlowDocument.PagePadding = new Thickness(0);
             }
         }
@@ -610,11 +616,10 @@ namespace Markuse_mälupulk_2._0
             SpaceUsage.Plot.Clear();
             ScottPlot.Color[] colors = [ScottPlot.Colors.Lime, ScottPlot.Colors.BlueViolet, ScottPlot.Colors.Yellow, ScottPlot.Colors.Red, ScottPlot.Colors.Cyan, ScottPlot.Colors.Blue, ScottPlot.Colors.Transparent];
             List<ScottPlot.PieSlice> slices = new();
-            
 
             foreach (KeyValuePair<string, int> pair in values)
             {
-                slices.Add(new ScottPlot.PieSlice() { Value = pair.Value, FillColor = colors.First(), LegendText = pair.Key });
+                slices.Add(new ScottPlot.PieSlice() { Value = pair.Value, FillColor = colors.First(), Label = pair.Key, LegendText = pair.Key, LabelStyle = new LabelStyle() { Alignment = Alignment.LowerRight}});
                 colors = colors.Skip(1).ToArray(); // remove each color from the colors array, so that we don't have to deal with indexing
             }
 
@@ -629,12 +634,9 @@ namespace Markuse_mälupulk_2._0
             SpaceUsage.Plot.Legend.BackgroundColor = ScottPlot.Colors.Transparent;
             SpaceUsage.Plot.Legend.ShadowFillStyle.Color = ScottPlot.Colors.Transparent;
             SpaceUsage.Plot.Legend.OutlineColor = ScottPlot.Colors.Transparent;
-            SpaceUsage.Plot.ShowLegend();
 
             // disable axies, because it's a piechart lol
             SpaceUsage.Plot.Layout.Frameless();
-            
-            
         }
 
         internal void LoadTheme()
@@ -1906,9 +1908,9 @@ namespace Markuse_mälupulk_2._0
 
         private async void RealEditNews(string idx)
         {
-            RichCreator rc = new($"{flash_root}/E_INFO/uudis{idx}.docx".Replace("\\", "/"));
+            RichCreator rc = new($"{flash_root}/E_INFO/uudis{idx}.rtf".Replace("\\", "/"));
             await rc.ShowDialog(this).WaitAsync(CancellationToken.None);
-            rc.RichTextBox1.SaveWordDoc($"{flash_root}/E_INFO/uudis{idx}.docx");
+            rc.RichTextBox1.SaveRtfDoc($"{flash_root}/E_INFO/uudis{idx}.rtf");
             rc.Close();
         }
 
@@ -2011,7 +2013,7 @@ namespace Markuse_mälupulk_2._0
             //salvestab uue uudise
             //teisendab teksti baitideks, et vältida probleeme kasutuseloleva failiga
             string path = flash_root + "/E_INFO/uudis9.docx";
-            rtb?.SaveWordDoc(path);
+            //rtb?.SaveAsWord(path);
             rtb = null;
             File.Move(flash_root + "/E_INFO/uudis9.docx", flash_root+ "/E_INFO/uudis1.docx");
 
@@ -2022,7 +2024,7 @@ namespace Markuse_mälupulk_2._0
             await MessageBoxShow("Andmed salvestati edukalt. Programm värskendab nüüd andmeid...", "Arendamine", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success);
             ReloadData(sender, e);
         }
-        
+
         // Reimplementation of WinForms MessageBox.Show
         internal Task<MsBox.Avalonia.Enums.ButtonResult> MessageBoxShow(string message, string caption = "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum buttons = MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon icon = MsBox.Avalonia.Enums.Icon.None, WindowStartupLocation spawn = WindowStartupLocation.CenterOwner)
         {

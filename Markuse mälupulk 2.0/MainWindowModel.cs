@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using AvRichTextBox;
 
 namespace Markuse_mälupulk_2_0
 {
@@ -16,6 +17,7 @@ namespace Markuse_mälupulk_2_0
         public string toptext;
         public string info;
         public string infotopic;
+        public FlowDocument Document { get; set; }
 
         public MainWindowModel()
         {
@@ -24,6 +26,11 @@ namespace Markuse_mälupulk_2_0
             this.toptext = "";
             this.info = "";
             this.infotopic = "";
+        }
+
+        public void LoadDocument()
+        {
+            
         }
 
         public static Bitmap GetResource(string name)
