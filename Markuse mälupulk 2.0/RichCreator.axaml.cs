@@ -34,15 +34,15 @@ public partial class RichCreator : Window
         switch (button.Content)
         {
             case "P":
-                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontWeightProperty, Avalonia.Media.FontWeight.Bold);
+                RichTextBox1.FlowDocument.Selection.ApplyFormatting(FontWeightProperty, Avalonia.Media.FontWeight.Bold);
                 break;
             case "K":
-                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontStyleProperty, FontStyle.Italic);
+                RichTextBox1.FlowDocument.Selection.ApplyFormatting(FontStyleProperty, FontStyle.Italic);
                 break;
             case "H":
-                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontWeightProperty, Avalonia.Media.FontWeight.Regular);
-                RichTextBox1.FlowDoc.Selection.ApplyFormatting(FontStyleProperty, FontStyle.Normal);
-                RichTextBox1.FlowDoc.Selection.ApplyFormatting(Inline.TextDecorationsProperty, TextDecorations.Baseline);
+                RichTextBox1.FlowDocument.Selection.ApplyFormatting(FontWeightProperty, Avalonia.Media.FontWeight.Regular);
+                RichTextBox1.FlowDocument.Selection.ApplyFormatting(FontStyleProperty, FontStyle.Normal);
+                RichTextBox1.FlowDocument.Selection.ApplyFormatting(Inline.TextDecorationsProperty, TextDecorations.Baseline);
                 break;
             case "&lt;--":
             case "<--":
@@ -86,10 +86,10 @@ public partial class RichCreator : Window
             switch (textBlock.Text)
             {
                 case "A":
-                    RichTextBox1.FlowDoc.Selection.ApplyFormatting(Inline.TextDecorationsProperty, TextDecorations.Underline);
+                    RichTextBox1.FlowDocument.Selection.ApplyFormatting(Inline.TextDecorationsProperty, TextDecorations.Underline);
                     break;
                 case "L":
-                    RichTextBox1.FlowDoc.Selection.ApplyFormatting(Inline.TextDecorationsProperty, TextDecorations.Strikethrough); // strikethrough doesn't work on current version of AvRichTextBox for some reason...
+                    RichTextBox1.FlowDocument.Selection.ApplyFormatting(Inline.TextDecorationsProperty, TextDecorations.Strikethrough); // strikethrough doesn't work on current version of AvRichTextBox for some reason...
                     break;
             }
         }
@@ -99,14 +99,14 @@ public partial class RichCreator : Window
     {
         ColorDialog cd = new();
         await cd.ShowDialog(this).WaitAsync(CancellationToken.None);
-        RichTextBox1.FlowDoc.Selection.ApplyFormatting(ForegroundProperty, new SolidColorBrush(cd.Color.Color));
+        RichTextBox1.FlowDocument.Selection.ApplyFormatting(ForegroundProperty, new SolidColorBrush(cd.Color.Color));
     }
 
     async void SwapBg()
     {
         ColorDialog cd = new();
         await cd.ShowDialog(this).WaitAsync(CancellationToken.None);
-        RichTextBox1.FlowDoc.Selection.ApplyFormatting(BackgroundProperty, new SolidColorBrush(cd.Color.Color));
+        RichTextBox1.FlowDocument.Selection.ApplyFormatting(BackgroundProperty, new SolidColorBrush(cd.Color.Color));
     }
 
     AvRichTextBox.Paragraph GetSelectionParagraph()
@@ -115,12 +115,12 @@ public partial class RichCreator : Window
         string selectedText;
         try
         {
-            selectedText = RichTextBox1.FlowDoc.Selection.Text;
+            selectedText = RichTextBox1.FlowDocument.Selection.Text;
         } catch
         {
-            return (AvRichTextBox.Paragraph)RichTextBox1.FlowDoc.Blocks.First();
+            return (AvRichTextBox.Paragraph)RichTextBox1.FlowDocument.Blocks.First();
         }
-        foreach (Block b in RichTextBox1.FlowDoc.Blocks)
+        foreach (Block b in RichTextBox1.FlowDocument.Blocks)
         {
             if (b.Text.Contains(selectedText))
             {
@@ -248,8 +248,8 @@ public partial class RichCreator : Window
                 // Convert HTML to DOCX
                 HtmlToDocx(htmlContent, docxPath);
             }
-            RichTextBox1.LoadWordDoc(loadDoc.Replace("//", "/").Replace(".rtf", ".docx"));
-            RichTextBox1.FlowDoc.PagePadding = new Avalonia.Thickness(0);
+            RichTextBox1.LoadWordDoc(loadDoc.Replace("//", "/"));
+            RichTextBox1.FlowDocument.PagePadding = new Avalonia.Thickness(0);
         }
     }
 }

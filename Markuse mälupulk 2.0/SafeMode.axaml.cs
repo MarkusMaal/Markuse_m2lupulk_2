@@ -122,11 +122,11 @@ namespace Markuse_mälupulk_2_0
             if (currentDevice == null) {
                 return;
             }
-            if (File.Exists(currentDevice.RootDirectory + "/E_INFO/" + filename.Replace(".rtf", ".docx")))
+            if (File.Exists(currentDevice.RootDirectory + "/E_INFO/" + filename))
             {
                 NewsBox.CloseDocument();
-                NewsBox.LoadWordDoc(currentDevice.RootDirectory + "/E_INFO/" + filename.Replace(".rtf", ".docx"));
-                NewsBox.FlowDoc.PagePadding = new Thickness(0);
+                NewsBox.LoadWordDoc(currentDevice.RootDirectory + "/E_INFO/" + filename);
+                NewsBox.FlowDocument.PagePadding = new Thickness(0);
             }
         }
 

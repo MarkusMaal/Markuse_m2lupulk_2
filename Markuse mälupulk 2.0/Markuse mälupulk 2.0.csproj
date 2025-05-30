@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -63,23 +63,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="1.1.2" />
-    <PackageReference Include="Avalonia" Version="11.0.10" />
-    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.0.10" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.0.10" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
+    <PackageReference Include="AngleSharp" Version="1.3.0" />
+    <PackageReference Include="Avalonia" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.0" />
     <!--<PackageReference Include="Avalonia.Diagnostics" Version="11.0.10" />-->
-    <PackageReference Include="DocX" Version="3.0.0" />
-    <PackageReference Include="MessageBox.Avalonia" Version="3.1.5.1" />
+    <PackageReference Include="DocX" Version="4.0.25105.5786" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
     <PackageReference Include="RtfDomParser" Version="7.0.0" />
+    <PackageReference Include="RtfDomParserCore" Version="1.0.4" />
     <PackageReference Include="RtfPipe" Version="2.0.7677.4303" />
-    <PackageReference Include="ScottPlot.Avalonia" Version="5.0.35" />
-    <PackageReference Include="Simplecto.Avalonia.RichTextBox" Version="1.0.9" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.6" />
+    <PackageReference Include="ScottPlot.Avalonia" Version="5.0.55" />
+    <PackageReference Include="Simplecto.Avalonia.RichTextBox" Version="1.3.5" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,5 +94,9 @@
 
   <ItemGroup>
     <Content Include="mas_flash.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MasCommon\MasCommon.csproj" />
   </ItemGroup>
 </Project>

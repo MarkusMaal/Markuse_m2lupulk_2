@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Markuse mälupulk 2.0", "Markuse mälupulk 2.0\Markuse mälupulk 2.0.csproj", "{F1D8497C-1C8E-415F-81EF-F1BB56B27449}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasCommon", "MasCommon\MasCommon.csproj", "{AA254F4C-3583-400E-A483-A82862EA2A81}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{F1D8497C-1C8E-415F-81EF-F1BB56B27449}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1D8497C-1C8E-415F-81EF-F1BB56B27449}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1D8497C-1C8E-415F-81EF-F1BB56B27449}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA254F4C-3583-400E-A483-A82862EA2A81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA254F4C-3583-400E-A483-A82862EA2A81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA254F4C-3583-400E-A483-A82862EA2A81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA254F4C-3583-400E-A483-A82862EA2A81}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

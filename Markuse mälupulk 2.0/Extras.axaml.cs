@@ -164,9 +164,8 @@ namespace Markuse_mälupulk_2_0
                 List<string> videod = [];
                 for (int i = 1; i <= 5; i++)
                 {
-                    //rtb.LoadRtfDoc(parent.flash_root + "/E_INFO/uudis" + i.ToString() + ".rtf");
-                    rtb.LoadWordDoc(parent.flash_root + "/E_INFO/uudis" + i.ToString() + ".docx");
-                    string lines = rtb.FlowDoc.Text;
+                    rtb.LoadWordDoc(parent.flash_root + "/E_INFO/uudis" + i.ToString() + ".rtf");
+                    string lines = rtb.FlowDocument.Text;
                     pealkirjad.Add(ToSuitableBatchString(lines.Split('\n')[0].Replace("\r", "")));
                     uudised.Add(ToSuitableBatchString(lines.Replace(lines.Split('\n')[0], "").Replace("\r\n", "").Replace("\n", "")));
                 }

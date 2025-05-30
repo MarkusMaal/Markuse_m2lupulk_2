@@ -329,6 +329,10 @@
       <Setter Property="FontSize" Value="14"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
+    <Style Selector="TabItem > AccessText">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
     <Style Selector="TabControl WrapPanel">
       <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
