@@ -167,8 +167,12 @@ namespace Markuse_mälupulk_2._0
                     WaitUntilConnected();
                     return;
                 }
+                SiisTabs.IsEnabled = true;
                 flash_root = ((string[])sd.DriveList.SelectedItem)[0];
                 CollectInfo();
+            } else
+            {
+                SiisTabs.IsEnabled = true;
             }
         }
 
@@ -375,139 +379,105 @@ namespace Markuse_mälupulk_2._0
                     {
                         return;
                     }
-                    try
+                    switch (CollectProgress.Value)
                     {
-                        switch (CollectProgress.Value)
-                        {
-                            case 1:
-                                VideoBox.Items.Clear();
-                                VideoBoxDev.Items.Clear();
-                                foreach (FileInfo fi in new DirectoryInfo(flash_root + "/Markuse_videod").GetFiles())
+                        case 1:
+                            VideoBox.Items.Clear();
+                            VideoBoxDev.Items.Clear();
+                            foreach (FileInfo fi in new DirectoryInfo(flash_root + "/Markuse_videod").GetFiles())
+                            {
+                                if (fi.Name.Substring(1, 1) == ".")
                                 {
-                                    if (fi.Name.Substring(1, 1) == ".")
-                                    {
-                                        string videoName = string.Join('.', fi.Name.Split('.').Skip(1))[1..];
-                                        VideoBox.Items.Add(videoName);
-                                        VideoBoxDev.Items.Add(videoName);
-                                    }
+                                    string videoName = string.Join('.', fi.Name.Split('.').Skip(1))[1..];
+                                    VideoBox.Items.Add(videoName);
+                                    VideoBoxDev.Items.Add(videoName);
                                 }
-                                break;
-                            case 5:
-                                LoadDoc("/E_INFO/uudis1.rtf");
-                                break;
-                            case 20:
-                                UsersBox.Items.Clear();
-                                foreach (DirectoryInfo d in new DirectoryInfo(flash_root + "/markuse asjad/markuse asjad").GetDirectories())
+                            }
+                            break;
+                        case 5:
+                            LoadDoc("/E_INFO/uudis1.rtf");
+                            break;
+                        case 20:
+                            UsersBox.Items.Clear();
+                            foreach (DirectoryInfo d in new DirectoryInfo(flash_root + "/markuse asjad/markuse asjad").GetDirectories())
+                            {
+                                if ((d.Name == "Mine") || (d.Name == "_Template") || d.Name.StartsWith(' '))
                                 {
-                                    if ((d.Name == "Mine") || (d.Name == "_Template") || d.Name.StartsWith(' '))
-                                    {
-                                        continue;
-                                    }
-                                    UsersBox.Items.Add(d.Name);
+                                    continue;
                                 }
-                                break;
-                            case 35:
-                                QAppBox.Items.Clear();
-                                foreach (DirectoryInfo d in new DirectoryInfo(flash_root + "/markuse asjad/Kiirrakendused").GetDirectories())
+                                UsersBox.Items.Add(d.Name);
+                            }
+                            break;
+                        case 35:
+                            QAppBox.Items.Clear();
+                            foreach (DirectoryInfo d in new DirectoryInfo(flash_root + "/markuse asjad/Kiirrakendused").GetDirectories())
+                            {
+                                if ((d.Name == " Mine") || (d.Name == "_Template") || d.Name.StartsWith(' '))
                                 {
-                                    if ((d.Name == " Mine") || (d.Name == "_Template") || d.Name.StartsWith(' '))
-                                    {
-                                        continue;
-                                    }
-                                    QAppBox.Items.Add(d.Name);
+                                    continue;
                                 }
-                                break;
-                            case 43:
-                                if (File.Exists(mas_root + "/settings2.sf"))
+                                QAppBox.Items.Add(d.Name);
+                            }
+                            break;
+                        case 43:
+                            if (File.Exists(mas_root + "/settings2.sf"))
+                            {
+                                string[] vs = File.ReadAllText(mas_root + "/settings2.sf", Encoding.ASCII).Split('=');
+                                if (vs[1].ToString() == "true")
                                 {
-                                    string[] vs = File.ReadAllText(mas_root + "/settings2.sf", Encoding.ASCII).Split('=');
-                                    if (vs[1].ToString() == "true")
-                                    {
-                                        AutostartCheck.IsChecked = true;
-                                    }
-                                    else
-                                    {
-                                        AutostartCheck.IsChecked = false;
-                                    }
+                                    AutostartCheck.IsChecked = true;
                                 }
-                                break;
-                            case 50:
-                                string edition = File.ReadAllText(flash_root + "/E_INFO/edition.txt");
-                                switch (edition.ToLower())
+                                else
                                 {
-                                    case "basic":
-                                        EditionBox.Fill = new SolidColorBrush(Colors.LimeGreen);
-                                        break;
-                                    case "premium":
-                                        EditionBox.Fill = new SolidColorBrush(Colors.DarkRed);
-                                        break;
-                                    case "ultimate":
-                                        EditionBox.Fill = new SolidColorBrush(Colors.BlueViolet);
-                                        break;
+                                    AutostartCheck.IsChecked = false;
                                 }
-                                EditionLabel.Text = "Väljaanne: " + edition;
-                                break;
-                            case 55:
-                                DriveInfo di = new DriveInfo(flash_root);
-                                FilesystemLabel.Content = "Failisüsteem: " + di.DriveFormat;
-                                CapacityLabel.Content = "Maht: " + new SelectDrive().GetFriendlySize(di.TotalSize);
-                                DriveMountLabel.Content = "Draiv: " + di.RootDirectory;
-                                break;
-                            case 60:
-                                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                                var attr = Attribute.GetCustomAttribute(assembly, typeof(BuildDateTimeAttribute)) as BuildDateTimeAttribute;
-                                CpanelDateLabel.Content = "Kuupäev: " + attr?.Built.Date.ToString().Split(' ')[0];
-                                CpanelVersionLabel.Content = "Versioon: " + assembly.GetName()?.Version?.ToString();
-                                break;
-                            case 65:
-                                Thread[] th = [
-                                    new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/markuse asjad"))),
-                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/multiboot"))),
-                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/sources"))),
-                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/Pakkfailid"))),
-                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/Kiirrakendused"))),
-                                new Thread(() => GetGameSize())
-                                ];
-                                threads = th;
-                                foreach (Thread t in threads)
-                                {
-                                    t.Start();
-                                }
-                                waitForExit.Start();
-                                canContinue = false;
-                                break;
-                        }
-                    } catch (Exception ex)
-                    {
-                        canContinue = false;
-                        switch (await MessageBoxShow($"Info kogumine nurjus. Vea üksikasjad: {ex.Message}\n\n{ex.StackTrace}\n\nKas soovite muu mälupulga valida?", "Markuse mälupulk", MsBox.Avalonia.Enums.ButtonEnum.YesNoAbort, MsBox.Avalonia.Enums.Icon.Error))
-                        {
-                            case MsBox.Avalonia.Enums.ButtonResult.Abort:
-                                Environment.Exit(1);
-                                return;
-                            case MsBox.Avalonia.Enums.ButtonResult.Yes:
-                                dpt.IsEnabled = false;
-                                SelectDrive sd = new()
-                                {
-                                    parent = this,
-                                    Background = this.Background,
-                                    Foreground = this.Foreground,
-                                };
-                                await sd.ShowDialog(this).WaitAsync(cancellationToken: CancellationToken.None);
-                                if (sd.exit)
-                                {
-                                    this.Close();
-                                    return;
-                                }
-                                flash_root = ((string[])sd.DriveList.SelectedItem)[0];
-                                canContinue = true;
-                                CollectInfo();
-                                break;
-                            case MsBox.Avalonia.Enums.ButtonResult.No:
-                                CollectProgress.Value--;
-                                canContinue = true;
-                                break;
-                        }
+                            }
+                            break;
+                        case 50:
+                            string edition = File.ReadAllText(flash_root + "/E_INFO/edition.txt");
+                            switch (edition.ToLower())
+                            {
+                                case "basic":
+                                    EditionBox.Fill = new SolidColorBrush(Colors.LimeGreen);
+                                    break;
+                                case "premium":
+                                    EditionBox.Fill = new SolidColorBrush(Colors.DarkRed);
+                                    break;
+                                case "ultimate":
+                                    EditionBox.Fill = new SolidColorBrush(Colors.BlueViolet);
+                                    break;
+                            }
+                            EditionLabel.Text = "Väljaanne: " + edition;
+                            break;
+                        case 55:
+                            DriveInfo di = new DriveInfo(flash_root);
+                            FilesystemLabel.Content = "Failisüsteem: " + di.DriveFormat;
+                            CapacityLabel.Content = "Maht: " + new SelectDrive().GetFriendlySize(di.TotalSize);
+                            DriveMountLabel.Content = "Draiv: " + di.RootDirectory;
+                            break;
+                        case 60:
+                            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                            var attr = Attribute.GetCustomAttribute(assembly, typeof(BuildDateTimeAttribute)) as BuildDateTimeAttribute;
+                            CpanelDateLabel.Content = "Kuupäev: " + attr?.Built.Date.ToString().Split(' ')[0];
+                            CpanelVersionLabel.Content = "Versioon: " + assembly.GetName()?.Version?.ToString();
+                            break;
+                        case 65:
+                            Thread[] th = [
+                                new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/markuse asjad"))),
+                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/multiboot"))),
+                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/sources"))),
+                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/Pakkfailid"))),
+                            new Thread(() => GetDirSize(new DirectoryInfo(flash_root + "/markuse asjad/Kiirrakendused"))),
+                            new Thread(() => GetGameSize())
+                            ];
+                            threads = th;
+                            foreach (Thread t in threads)
+                            {
+                                t.Start();
+                            }
+                            waitForExit.Start();
+                            canContinue = false;
+                            break;
                     }
                 }
             };
@@ -1043,6 +1013,7 @@ namespace Markuse_mälupulk_2._0
                     if (File.Exists(di.Name + "/E_INFO/edition.txt"))
                     {
                         searchDrives.IsEnabled = false;
+                        SiisTabs.IsEnabled = true;
                         sd = new()
                         {
                             parent = this,

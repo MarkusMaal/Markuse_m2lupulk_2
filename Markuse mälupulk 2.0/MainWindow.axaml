@@ -33,7 +33,7 @@
         </Panel.Background>
         <StackPanel VerticalAlignment="Center">
           <Image Source="/Resources/mas_flash_wide.png" Width="100" Margin="0,15"></Image>
-          <Label FontSize="24" FontFamily="Segoe UI" HorizontalAlignment="Center" VerticalAlignment="Bottom">markuse mälupulk</Label>
+          <Label FontSize="24" FontFamily="Segoe UI Semilight" HorizontalAlignment="Center" VerticalAlignment="Bottom">markuse mälupulk</Label>
         </StackPanel>
       </Panel>
       <Panel.Background>
@@ -41,7 +41,7 @@
       </Panel.Background>
     </Panel>
     <Panel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,-2">
-      <TabControl FontSize="12" SelectionChanged="TabControl_SelectionChanged">
+      <TabControl Name="SiisTabs" FontSize="12" SelectionChanged="TabControl_SelectionChanged" IsEnabled="False">
         <!--Avaleht-->
         <TabItem Header="Uudised" PointerReleased="Reload_Click">
           <Grid ColumnDefinitions="*, 2, *" Name="NewsGrid">

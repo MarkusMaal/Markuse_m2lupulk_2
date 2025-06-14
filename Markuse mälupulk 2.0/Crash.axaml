@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="800" Height="500"
+        x:Class="Markuse_mälupulk_2._0.Crash" Icon="/Resources/mas_flash.png"
+        Title="Mälupulga juhtpaneel jooksis kokku" WindowStartupLocation="CenterScreen">
+  <Grid RowDefinitions="260,*,50" Background="#f005">
+    <Panel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,-10" Name="TopPanel">
+      <Button Name="FullScreenExit" VerticalAlignment="Top" HorizontalAlignment="Right" ZIndex="1" Margin="20" BorderBrush="White" Background="Maroon" CornerRadius="0" Padding="8" FontSize="18" IsVisible="False">X</Button>
+      <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Name="GradientBg">
+        <Panel.Background>
+          <LinearGradientBrush EndPoint="50%,100%" StartPoint="50%,0%">
+            <GradientStop Color="#a500" Offset="0"/>
+            <GradientStop Color="#f005" Offset="0.9"/>
+          </LinearGradientBrush>
+        </Panel.Background>
+      </Panel>
+      <Panel.Background>
+        <ImageBrush Source="Resources/cool_pattern.png" Stretch="UniformToFill"></ImageBrush>
+      </Panel.Background>
+    </Panel>
+    <StackPanel Grid.Row="0">
+      <StackPanel Orientation="Horizontal" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,0,0,-40">
+        <Image Source="/Resources/mas_flash_wide.png" HorizontalAlignment="Left" VerticalAlignment="Top" Width="200" Margin="40">
+      
+        </Image>
+        <TextBlock VerticalAlignment="Center" FontSize="30" Margin="0,0,40,50">Tohoh, see on nüüd küll piinlik!</TextBlock>
+      </StackPanel>
+        <StackPanel HorizontalAlignment="Center">
+          <TextBlock TextAlignment="Left" TextWrapping="Wrap">Vabandame, kuid mälupulga juhtpaneel suleti ootamatu kriitilise rikke tõttu, kuna ühtegi silurit ei tuvastatud. Juhul kui see rike kordub, saate programmi käivitada turvarežiimis.</TextBlock>
+          <TextBlock Margin="0,10,0,0">Tehniline info:</TextBlock>
+          <TextBlock Name="ErrorDescription" Margin="0,10,0,0" TextWrapping="Wrap">Design mode</TextBlock>
+        </StackPanel>
+    </StackPanel>
+
+    <ScrollViewer Margin="20,0,20,0" VerticalScrollBarVisibility="Visible" Grid.Row="1">
+      <TextBlock Name="StackTrace" Margin="0,10,0,0" TextWrapping="Wrap">Stack</TextBlock>
+    </ScrollViewer>
+    <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
+      <Button Click="ButtonClose_Click">Sulge programm</Button>
+      <Button Click="ButtonReset_Click" Margin="10,0,0,0">Taaskäivita programm</Button>
+      <Button Click="ButtonResetSafe_Click" Margin="10,0,0,0">Taaskäivita programm turvarežiimis</Button>
+    </StackPanel>
+  </Grid>
+</Window>

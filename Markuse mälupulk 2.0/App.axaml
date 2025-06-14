@@ -35,4 +35,15 @@
       <Image x:Key="Tundmatu" Source="/Resources/Unknown.bmp" />
     </ResourceDictionary>
   </Application.Resources>
+  <Application.Styles>
+    <Style Selector="Label">
+      <Setter Property="FontFamily" Value="Segoe UI Semilight" />
+    </Style>
+    <Style Selector="TextBlock">
+      <Setter Property="FontFamily" Value="Segoe UI Semilight" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="FontFamily" Value="Segoe UI Semilight" />
+    </Style>
+  </Application.Styles>
 </Application>
