@@ -32,7 +32,7 @@
           </LinearGradientBrush>
         </Panel.Background>
         <StackPanel VerticalAlignment="Center">
-          <Image Source="/Resources/mas_flash_wide.png" Width="100" Margin="0,15"></Image>
+          <Image Source="/Resources/mas_flash_wide.png" Width="100" Margin="0,15"  UseLayoutRounding="False" ></Image>
           <Label FontSize="24" FontFamily="Segoe UI Semilight" HorizontalAlignment="Center" VerticalAlignment="Bottom">markuse mälupulk</Label>
         </StackPanel>
       </Panel>
