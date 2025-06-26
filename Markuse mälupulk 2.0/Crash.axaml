@@ -22,7 +22,7 @@
     </Panel>
     <StackPanel Grid.Row="0">
       <StackPanel Orientation="Horizontal" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,0,0,-40">
-        <Image Source="/Resources/mas_flash_wide.png" HorizontalAlignment="Left" VerticalAlignment="Top" Width="200" Margin="40">
+        <Image Source="/Resources/mas_flash_wide_200px.png" HorizontalAlignment="Left" VerticalAlignment="Top" Width="200" Margin="40">
       
         </Image>
         <TextBlock VerticalAlignment="Center" FontSize="30" Margin="0,0,40,50">Tohoh, see on nüüd küll piinlik!</TextBlock>

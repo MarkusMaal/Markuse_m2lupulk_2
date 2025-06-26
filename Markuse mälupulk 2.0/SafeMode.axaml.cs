@@ -28,7 +28,7 @@ namespace Markuse_mälupulk_2_0
         int selectedIdx;
         int selectedArticle;
         string drive;
-        private readonly bool testing;
+        private readonly bool testing = Design.IsDesignMode;
 
 
         public SafeMode()
@@ -38,19 +38,6 @@ namespace Markuse_mälupulk_2_0
             selectedIdx = 0;
             drive = "";
             selectedArticle = 1;
-
-            // check if we're actually running the application, if not, just display the form with no data
-            // (the latter is true if we're in the designer)
-            testing = true;
-            foreach (Process p in Process.GetProcesses())
-            {
-                if (p.ProcessName.Contains("Markuse mälupulk")) 
-                {
-                    testing = false;
-                    break;
-                }
-            }
-
             InitializeComponent();
         }
 
@@ -88,8 +75,8 @@ namespace Markuse_mälupulk_2_0
                 }
                 NextDeviceButton.IsVisible = drives.Count > 0;
                 DeviceName.Content += " (" + drive + ")";
-                ReloadData();
             }
+            ReloadData();
         }
         void ReloadData()
         {

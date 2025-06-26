@@ -6,7 +6,7 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <AssemblyVersion>2.0.3.0</AssemblyVersion>
+    <AssemblyVersion>2.0.4.0</AssemblyVersion>
     <ApplicationIcon>mas_flash.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
@@ -50,6 +50,7 @@
     <AvaloniaResource Include="Resources\help.png" />
     <AvaloniaResource Include="Resources\mas_flash.png" />
     <AvaloniaResource Include="Resources\mas_flash_wide.png" />
+    <AvaloniaResource Include="Resources\mas_flash_wide_200px.png" />
     <AvaloniaResource Include="Resources\mas_its_symmetric.png" />
     <AvaloniaResource Include="Resources\Mälupulk.exe" />
     <AvaloniaResource Include="Resources\noteicon.png" />
