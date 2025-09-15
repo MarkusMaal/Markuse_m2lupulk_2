@@ -1041,7 +1041,7 @@ namespace Markuse_mälupulk_2._0
             searchDrives.Start();
         }
 
-        private async void ReloadData(object? sender, RoutedEventArgs? e) {
+        public async void ReloadData(object? sender, RoutedEventArgs? e) {
             LoadTheme();
             QAppPreview.Source = (Application.Current.Resources["Info"] as Image).Source;
             if (SwitchDevice.IsChecked ?? false)

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using Avalonia.Controls;
 using Tmds.DBus.Protocol;
 
 namespace Markuse_mälupulk_2._0
@@ -19,6 +20,7 @@ namespace Markuse_mälupulk_2._0
     {
         public static string root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.mas";
         public static bool foreign = false;
+        private Window MainWindow { get; set; }
         public override void Initialize()
         {
             if (!Verifile.CheckVerifileTamper() && !foreign)
@@ -46,18 +48,21 @@ namespace Markuse_mälupulk_2._0
                     }
                     c.ErrorDescription.Text = (args ?? ["", ""])[1];
                     c.StackTrace.Text = string.Join(" ", (args ?? ["", ""]).Skip(3).ToArray());
-                    desktop.MainWindow = c;
+                    MainWindow = c;
+                    desktop.MainWindow = MainWindow;
                     CompleteInit();
                     return;
                 }
                 if ((args?.Length > 0) && args.Contains("--safemode"))
                 {
-                    desktop.MainWindow = new SafeMode();
+                    MainWindow = new SafeMode();
                 }
                 else
                 {
-                    desktop.MainWindow = new MainWindow();
+                    MainWindow = new MainWindow();
                 }
+
+                desktop.MainWindow = MainWindow;
             }
 
             CompleteInit();
@@ -66,6 +71,18 @@ namespace Markuse_mälupulk_2._0
         private void CompleteInit()
         {
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private void CloseNativeButtonClick(object? sender, EventArgs e)
+        {
+            MainWindow.Close();
+        }
+
+        private void RefreshNativeButtonClick(object? sender, EventArgs e)
+        {
+            if (MainWindow is not MainWindow main) return;
+            if (!main.IsVisible) return;
+            main.ReloadData(sender, null);
         }
     }
 }

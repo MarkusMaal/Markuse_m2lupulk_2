@@ -1,14 +1,22 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:styling="clr-namespace:FluentAvalonia.Styling;assembly=FluentAvalonia"
              x:Class="Markuse_mälupulk_2._0.App"
-             RequestedThemeVariant="Dark">
+             RequestedThemeVariant="Dark" Name="Markuse mälupulk">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="Värskenda andmeid" Gesture="Meta+R" Click="RefreshNativeButtonClick"></NativeMenuItem>
+      <NativeMenuItemSeparator />
+      <NativeMenuItem Header="Sulge" Gesture="Meta+Q" Click="CloseNativeButtonClick"></NativeMenuItem>
+    </NativeMenu>
+  </NativeMenu.Menu>
+             
     <Application.Styles>
-        <FluentTheme />
+      <styling:FluentAvaloniaTheme PreferSystemTheme="True" PreferUserAccentColor="True" />
       <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
       <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
-
     </Application.Styles>
   <Application.Resources>
     <ResourceDictionary>
