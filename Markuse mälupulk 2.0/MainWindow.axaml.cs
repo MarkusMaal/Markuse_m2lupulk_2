@@ -521,7 +521,7 @@ namespace Markuse_mälupulk_2._0
             }
             else */ if (File.Exists(flash_root + filename))
             {
-                NewsBox.CloseDocument();
+                //NewsBox.CloseDocument();
                 NewsBox.LoadRtfDoc(flash_root + filename);
                 NewsBox.FlowDocument.PagePadding = new Thickness(0);
             }
