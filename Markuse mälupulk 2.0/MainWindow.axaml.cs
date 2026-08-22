@@ -901,8 +901,13 @@ namespace Markuse_mälupulk_2._0
         {
             if (VideoBox.SelectedItems?.Count > 0)
             {
+                
                 Process p = new();
                 p.StartInfo.FileName = $"{flash_root}/Markuse_videod/{VideoBox.SelectedIndex+1}. {VideoBox.SelectedItems[0]}";
+                if (!File.Exists(p.StartInfo.FileName))
+                {
+                    p.StartInfo.FileName = $"{flash_root}/Markuse_videod/{3 - VideoBox.SelectedIndex}. {VideoBox.SelectedItems[0]}";
+                }
                 p.StartInfo.UseShellExecute = true;
                 p.Start();
             }
